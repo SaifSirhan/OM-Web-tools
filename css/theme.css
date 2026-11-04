@@ -1,0 +1,360 @@
+/* ===== tokens ===== */
+:root {
+  --bg: #000000;
+  --panel: #0a0a0a;
+  --grid: #1a1a1a;
+  --accent: #00ff9c;
+  --accent-dim: #0f5c3a;
+  --cyan: #00e5ff;
+  --text: #d6d6d6;
+  --text-dim: #6a6a6a;
+  --danger: #ff3b3b;
+  --warn: #ffb800;
+  --font: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background-color: var(--bg);
+  /* the only permitted gradient: structural grid lines */
+  background-image:
+    repeating-linear-gradient(to right, var(--grid) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 48px);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ===== type ===== */
+.site-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.site-subtitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.panel-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grid);
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grid);
+  margin-bottom: 14px;
+}
+
+.site-footer {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ===== controls ===== */
+label {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+input,
+select,
+button,
+textarea {
+  font-family: var(--font);
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--grid);
+}
+
+input,
+select {
+  padding: 10px 12px;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+input:disabled {
+  color: var(--text-dim);
+}
+
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+input[type="radio"]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  transform: scale(0);
+}
+
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+input[type="radio"]:checked {
+  border-color: var(--accent);
+}
+
+option {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.btn-reset {
+  display: block;
+  margin-left: auto;
+  padding: 10px 26px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  cursor: pointer;
+}
+
+.btn-reset:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ===== table ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  padding: 10px 12px;
+  text-align: right;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--panel);
+  border: 1px solid var(--grid);
+  white-space: nowrap;
+}
+
+thead th:first-child {
+  text-align: left;
+}
+
+tbody td {
+  padding: 5px 8px;
+  text-align: right;
+  border: 1px solid var(--grid);
+  white-space: nowrap;
+}
+
+tbody td:first-child {
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--panel);
+}
+
+tbody input {
+  width: 100%;
+  min-width: 92px;
+  padding: 6px 8px;
+  text-align: right;
+  border-color: var(--grid);
+}
+
+tfoot td {
+  padding: 10px 12px;
+  text-align: right;
+  font-weight: 700;
+  border: 1px solid var(--grid);
+  background: var(--panel);
+}
+
+tfoot td:first-child {
+  text-align: left;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ev-cell {
+  color: var(--cyan);
+}
+
+/* ===== cards + chips ===== */
+.result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--grid);
+}
+
+.result-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.result-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.result-formula {
+  font-size: 0.66rem;
+  color: var(--text-dim);
+}
+
+.status {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 8px;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--grid);
+  color: var(--text-dim);
+}
+
+.status.good {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.status.bad {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.status.hidden {
+  display: none;
+}
+
+/* ===== fcac block ===== */
+.fcac-section {
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--grid);
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--grid);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.radio-option:hover {
+  border-color: var(--accent-dim);
+}
+
+.radio-option:has(input:checked) {
+  border-color: var(--accent);
+}
+
+.radio-option span {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.reestimate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--grid);
+}
+
+.reestimate-row.active {
+  border-color: var(--accent);
+}
+
+.reestimate-row input {
+  width: 190px;
+  max-width: 50%;
+  text-align: right;
+}
