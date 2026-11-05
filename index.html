@@ -1,9 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PM TOOLS · 07 COST &amp; EVM</title>
+  <script>
+    // Applied before the first stylesheet so a saved dark theme never flashes light.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/notes.css" />
@@ -11,14 +22,19 @@
 <body>
   <header class="site-header">
     <div class="shell">
-      <h1 class="site-title">PROJECT MANAGEMENT TOOLS</h1>
-      <p class="site-subtitle">DR RAMITA ABDUL RAHIM</p>
+      <div class="header-id">
+        <h1 class="site-title">PROJECT MANAGEMENT TOOLS</h1>
+        <p class="site-subtitle">DR RAMITA ABDUL RAHIM</p>
+      </div>
+      <button id="themeToggle" type="button" class="theme-toggle" aria-label="Switch to dark mode">🌙 Dark</button>
     </div>
   </header>
 
   <nav class="tabbar">
     <div class="shell">
       <button type="button" class="tab active" data-tab="ch01" aria-controls="tab-ch01" aria-selected="true">01 · PROJECT FUNDAMENTALS</button>
+      <button type="button" class="tab" data-tab="ch02" aria-controls="tab-ch02" aria-selected="false">02 · IDENTIFICATION &amp; SELECTION</button>
+      <button type="button" class="tab" data-tab="ch03" aria-controls="tab-ch03" aria-selected="false">03 · PROPOSALS &amp; CONTRACTS</button>
       <button type="button" class="tab" data-tab="ch07" aria-controls="tab-ch07" aria-selected="false">07 · COST &amp; EVM</button>
     </div>
   </nav>
@@ -171,6 +187,139 @@
           <h2>09 — BENEFITS</h2>
           <p class="definition">The ultimate benefit of implementing project management techniques is having a satisfied customer — whether you are the customer of your own project or a business being paid by a customer to perform a project.</p>
           <p class="note-caption">Planning and communication are the two activities that most reliably prevent problems from occurring or minimize their impact when they do.</p>
+        </section>
+      </article>
+    </section>
+
+    <section id="tab-ch02" class="panel" hidden>
+      <article class="notes">
+        <section class="note-block">
+          <h2>01 — PROJECT IDENTIFICATION &amp; SELECTION</h2>
+          <p class="definition">Projects start with recognizing a need, problem, or opportunity. Because organizations usually have more needs than resources, they must use a decision-making process to prioritize and select the project with the greatest overall benefit.</p>
+          <h3>Selection Process</h3>
+          <ul class="attr-list">
+            <li>Evaluate needs, costs, and benefits</li>
+            <li>Develop criteria</li>
+            <li>List assumptions</li>
+            <li>Gather data</li>
+            <li>Evaluate each opportunity</li>
+            <li>Combine "gut" feelings with quantitative information</li>
+          </ul>
+        </section>
+
+        <section class="note-block">
+          <h2>02 — PROJECT CHARTER</h2>
+          <p class="definition">A document that formally authorizes the project, commits funding, and establishes the framework to develop the baseline plan.</p>
+          <h3>Possible Elements</h3>
+          <div class="constraints constraints--pairs">
+            <div class="constraint"><span class="c-label">Project Title</span></div>
+            <div class="constraint"><span class="c-label">Purpose</span></div>
+            <div class="constraint"><span class="c-label">Description</span></div>
+            <div class="constraint"><span class="c-label">Objective</span></div>
+            <div class="constraint"><span class="c-label">Success Criteria</span></div>
+            <div class="constraint"><span class="c-label">Funding</span></div>
+            <div class="constraint"><span class="c-label">Major Deliverables</span></div>
+            <div class="constraint"><span class="c-label">Acceptance Criteria</span></div>
+            <div class="constraint"><span class="c-label">Milestone Schedule</span></div>
+            <div class="constraint"><span class="c-label">Key Assumptions</span></div>
+            <div class="constraint"><span class="c-label">Constraints</span></div>
+            <div class="constraint"><span class="c-label">Major Risks</span></div>
+            <div class="constraint"><span class="c-label">Project Manager</span></div>
+            <div class="constraint"><span class="c-label">Sponsor Designee</span></div>
+            <div class="constraint"><span class="c-label">Reporting Requirements</span></div>
+            <div class="constraint"><span class="c-label">Approval Signature</span></div>
+          </div>
+        </section>
+
+        <section class="note-block">
+          <h2>03 — REQUEST FOR PROPOSAL (RFP)</h2>
+          <p class="definition">Used when an organization decides to outsource a project or major portion of it to an external contractor. It comprehensively describes the project requirements so contractors can submit a thorough proposal.</p>
+          <h3>Guidelines for Developing an RFP</h3>
+          <ul class="attr-list">
+            <li>State project objective or purpose</li>
+            <li>Provide a statement of work</li>
+            <li>Include customer requirements</li>
+            <li>State deliverables the customer expects</li>
+            <li>State acceptance criteria</li>
+            <li>List customer-supplied items</li>
+            <li>State approvals required</li>
+            <li>State type of contract and payment terms</li>
+            <li>State schedule and key milestones</li>
+            <li>List format and content instructions</li>
+            <li>Indicate due date</li>
+            <li>Include evaluation criteria</li>
+          </ul>
+        </section>
+
+        <section class="note-block">
+          <h2>04 — CRITICAL SUCCESS FACTORS</h2>
+          <ul class="attr-list">
+            <li>The need must be clearly defined before preparing an RFP.</li>
+            <li>Project selection should be based on which project provides the greatest overall benefit compared to costs.</li>
+            <li>A good RFP allows contractors to understand exactly what the customer expects.</li>
+            <li>An RFP should provide format and content instructions so the customer can fairly compare all proposals.</li>
+            <li>Never provide information to only some contractors; it gives an unfair competitive advantage.</li>
+          </ul>
+        </section>
+      </article>
+    </section>
+
+    <section id="tab-ch03" class="panel" hidden>
+      <article class="notes">
+        <section class="note-block">
+          <h2>01 — BUILDING RELATIONSHIPS</h2>
+          <p class="definition">Building relationships with customers and partners is the foundation for successful funding and opportunities. Trust is key, and ethics are imperative.</p>
+          <h3>Pre-RFP Efforts</h3>
+          <ul class="attr-list">
+            <li>Begin developing the relationship before the RFP is prepared</li>
+            <li>Helps the client identify needs</li>
+            <li>Positions the contractor to win the contract</li>
+            <li>Develops a more clearly focused response</li>
+          </ul>
+        </section>
+
+        <section class="note-block">
+          <h2>02 — CREATING A WINNING PROPOSAL</h2>
+          <p class="definition">A proposal is a selling document. It must highlight the best idea to solve the problem, emphasize benefits to the customer, and address all requirements from the RFP.</p>
+          <h3>Three Main Sections</h3>
+          <div class="constraints constraints--pairs">
+            <div class="constraint">
+              <span class="c-label">Technical</span>
+              <span class="c-desc">Understand the need, proposed approach, benefits to customer.</span>
+            </div>
+            <div class="constraint">
+              <span class="c-label">Management</span>
+              <span class="c-desc">Description of major tasks, deliverables, schedule, org, related experience.</span>
+            </div>
+            <div class="constraint">
+              <span class="c-label">Cost</span>
+              <span class="c-desc">Estimated costs: labor, materials, equipment, facilities, travel, overhead, reserve, fee.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="note-block">
+          <h2>03 — CONTRACTS</h2>
+          <p class="definition">A contract must be signed before starting work. It establishes communication and agreements of deliverables for a certain price.</p>
+          <div class="constraints constraints--pairs">
+            <div class="constraint">
+              <span class="c-label">Fixed Price</span>
+              <span class="c-desc">Price remains fixed. Low risk for customer, high risk for contractor. For well-defined projects.</span>
+            </div>
+            <div class="constraint">
+              <span class="c-label">Cost-Reimbursement</span>
+              <span class="c-desc">Price is actual costs. High risk for customer, low risk for contractor. For higher-risk projects.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="note-block">
+          <h2>04 — MEASURING PROPOSAL SUCCESS</h2>
+          <ul class="attr-list">
+            <li><strong>Win Ratio:</strong> Number won / number submitted (all weighted equally).</li>
+            <li><strong>Total Dollar Value:</strong> Value won / value submitted (more weight to larger values).</li>
+          </ul>
+          <p class="note-caption">Do not bid on everything. Submit to win a fair share, but only respond where you have a better than average chance to win.</p>
         </section>
       </article>
     </section>

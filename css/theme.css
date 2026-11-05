@@ -1,192 +1,365 @@
-/* ===== tokens ===== */
+/* =============================================================
+   PM Tools · Modern Academic theme
+   Light is the default; <html data-theme="dark"> swaps tokens.
+   This file owns tokens, base type and component skins.
+   Structure + spacing live in layout.css, notes in notes.css.
+   ============================================================= */
+
+/* ---- shared tokens (theme independent) ---- */
 :root {
-  --bg: #000000;
-  --panel: #0a0a0a;
-  --grid: #1a1a1a;
-  --accent: #00ff9c;
-  --accent-dim: #0f5c3a;
-  --cyan: #00e5ff;
-  --text: #d6d6d6;
-  --text-dim: #6a6a6a;
-  --danger: #ff3b3b;
-  --warn: #ffb800;
-  --font: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+  --radius: 6px;
+  --radius-pill: 999px;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --dur: 200ms;
 }
 
+/* ---- light: paper and ink ---- */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sunken: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-ink: #6d28d9;
+  --accent-contrast: #ffffff;
+  --tint: rgba(124, 58, 237, 0.06);
+  --tint-strong: rgba(124, 58, 237, 0.14);
+  --ring: rgba(124, 58, 237, 0.25);
+  --status-positive: #047857;
+  --status-positive-tint: rgba(16, 185, 129, 0.12);
+  --status-negative: #b91c1c;
+  --status-negative-tint: rgba(239, 68, 68, 0.1);
+  --border: #e2e8f0;
+  --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+}
+
+/* ---- dark: the same document, read at night ---- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --bg-sunken: #162032;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --accent: #a78bfa;
+  --accent-hover: #c4b5fd;
+  --accent-ink: #c4b5fd;
+  --accent-contrast: #172033;
+  --tint: rgba(167, 139, 250, 0.12);
+  --tint-strong: rgba(167, 139, 250, 0.24);
+  --ring: rgba(167, 139, 250, 0.38);
+  --status-positive: #34d399;
+  --status-positive-tint: rgba(52, 211, 153, 0.16);
+  --status-negative: #f87171;
+  --status-negative-tint: rgba(248, 113, 113, 0.16);
+  --border: #334155;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- reset ---- */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  border-radius: 0;
 }
 
 html {
-  background: var(--bg);
-}
-
-body {
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text);
-  background-color: var(--bg);
-  /* the only permitted gradient: structural grid lines */
-  background-image:
-    repeating-linear-gradient(to right, var(--grid) 0 1px, transparent 1px 48px),
-    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 48px);
+  background-color: var(--bg-main);
   -webkit-text-size-adjust: 100%;
 }
 
-/* ===== type ===== */
+body {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
+  transition: background-color var(--dur) ease, color var(--dur) ease;
+}
+
+::selection {
+  background: var(--tint-strong);
+  color: var(--text-primary);
+}
+
+/* ---- typography ---- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .site-title {
-  font-size: 1.05rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent);
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
 }
 
 .site-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--text-dim);
-  margin-top: 4px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+/* Panel and block headings: scholarly serif over a hairline rule. */
+.panel-title,
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-primary);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
 }
 
 .panel-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--grid);
-  margin-bottom: 20px;
+  font-size: 1.12rem;
+  letter-spacing: 0.05em;
 }
 
 .section-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--grid);
-  margin-bottom: 14px;
+  font-size: 0.98rem;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
 }
 
 .site-footer {
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-/* ===== controls ===== */
-label {
-  display: block;
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text-muted);
+}
+
+/* ---- cards ---- */
+.card,
+.panel,
+.result-card,
+.fcac-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: background-color var(--dur) ease, border-color var(--dur) ease,
+    box-shadow var(--dur) ease;
+}
+
+/* ---- tabs ---- */
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--dur) ease, border-color var(--dur) ease;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  border-bottom-color: var(--tint-strong);
+}
+
+.tab.active {
+  font-weight: 600;
+  color: var(--accent-ink);
+  border-bottom-color: var(--accent);
+}
+
+/* ---- fields ---- */
+label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 input,
 select,
-button,
-textarea {
-  font-family: var(--font);
-  font-size: 0.85rem;
-  color: var(--text);
-  background: var(--panel);
-  border: 1px solid var(--grid);
+textarea,
+button {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
 }
 
 input,
 select {
-  padding: 10px 12px;
-  width: 100%;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur) ease, box-shadow var(--dur) ease;
 }
 
-input:focus,
-select:focus,
-button:focus {
-  outline: none;
-  border-color: var(--accent);
+input::placeholder {
+  color: var(--text-muted);
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
+  font-variant-numeric: tabular-nums;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input::placeholder {
-  color: var(--text-dim);
+input:disabled,
+select:disabled {
+  color: var(--text-muted);
+  background-color: var(--bg-sunken);
+  cursor: not-allowed;
 }
 
-input:disabled {
-  color: var(--text-dim);
+option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
-input[type="radio"] {
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* ---- radios ---- */
+input[type='radio'] {
   appearance: none;
   -webkit-appearance: none;
   display: grid;
   place-content: center;
-  width: 14px;
-  height: 14px;
   flex: none;
-  background: var(--bg);
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
   cursor: pointer;
+  transition: border-color var(--dur) ease, box-shadow var(--dur) ease;
 }
 
-input[type="radio"]::before {
-  content: "";
+input[type='radio']::before {
+  content: '';
   width: 8px;
   height: 8px;
-  background: var(--accent);
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
   transform: scale(0);
+  transition: transform var(--dur) ease;
 }
 
-input[type="radio"]:checked::before {
+input[type='radio']:hover,
+input[type='radio']:checked {
+  border-color: var(--accent);
+}
+
+input[type='radio']:checked::before {
   transform: scale(1);
 }
 
-input[type="radio"]:checked {
-  border-color: var(--accent);
+input[type='radio']:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
-option {
-  background: var(--panel);
-  color: var(--text);
-}
-
+/* ---- buttons ---- */
+.btn-primary,
 .btn-reset {
-  display: block;
-  margin-left: auto;
-  padding: 10px 26px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  border-color: var(--accent-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius);
   cursor: pointer;
+  transition: background-color var(--dur) ease, color var(--dur) ease,
+    border-color var(--dur) ease;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  border: 1px solid var(--accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* Reset wipes the whole workbook, so it stays quiet until hovered. */
+.btn-reset {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .btn-reset:hover {
-  color: var(--accent);
+  color: var(--status-negative);
+  background-color: var(--status-negative-tint);
+  border-color: var(--status-negative);
+}
+
+:where(button, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- theme toggle ---- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--dur) ease, border-color var(--dur) ease,
+    color var(--dur) ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent-ink);
+  background-color: var(--tint);
   border-color: var(--accent);
 }
 
-/* ===== table ===== */
+/* ---- table ---- */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -194,15 +367,15 @@ table {
 }
 
 thead th {
-  padding: 10px 12px;
   text-align: right;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-dim);
-  background: var(--panel);
-  border: 1px solid var(--grid);
   white-space: nowrap;
+  color: var(--text-secondary);
+  background-color: var(--bg-sunken);
+  border-bottom: 1px solid var(--border);
 }
 
 thead th:first-child {
@@ -210,134 +383,141 @@ thead th:first-child {
 }
 
 tbody td {
-  padding: 5px 8px;
   text-align: right;
-  border: 1px solid var(--grid);
   white-space: nowrap;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--dur) ease;
 }
 
 tbody td:first-child {
   text-align: left;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  background: var(--panel);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+tbody tr:hover td {
+  background-color: var(--tint);
 }
 
 tbody input {
-  width: 100%;
-  min-width: 92px;
-  padding: 6px 8px;
   text-align: right;
-  border-color: var(--grid);
 }
 
 tfoot td {
-  padding: 10px 12px;
   text-align: right;
   font-weight: 700;
-  border: 1px solid var(--grid);
-  background: var(--panel);
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-top: 2px solid var(--border);
 }
 
 tfoot td:first-child {
   text-align: left;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
+/* Earned value is derived, not typed: mark it with the accent. */
 .ev-cell {
-  color: var(--cyan);
+  font-weight: 600;
+  color: var(--accent-ink);
 }
 
-/* ===== cards + chips ===== */
+/* ---- result tiles ---- */
 .result-card {
-  display: flex;
-  flex-direction: column;
   gap: 6px;
-  padding: 16px;
-  background: var(--panel);
-  border: 1px solid var(--grid);
+  background-color: var(--bg-main);
+  box-shadow: none;
 }
 
 .result-label {
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
 .result-value {
-  font-size: 1.35rem;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
   font-weight: 700;
-  line-height: 1.2;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
   word-break: break-word;
 }
 
 .result-formula {
-  font-size: 0.66rem;
-  color: var(--text-dim);
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
+/* ---- status chips ---- */
 .status {
   display: inline-block;
   width: fit-content;
-  padding: 2px 8px;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid var(--grid);
-  color: var(--text-dim);
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  background-color: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
 }
 
-.status.good {
-  border-color: var(--accent);
-  color: var(--accent);
+.status.good,
+.status--under-budget {
+  color: var(--status-positive);
+  background-color: var(--status-positive-tint);
 }
 
-.status.bad {
-  border-color: var(--danger);
-  color: var(--danger);
+.status.bad,
+.status--over-budget {
+  color: var(--status-negative);
+  background-color: var(--status-negative-tint);
 }
 
 .status.hidden {
   display: none;
 }
 
-/* ===== fcac block ===== */
+/* ---- forecast method block ---- */
 .fcac-section {
-  padding: 16px;
-  background: var(--panel);
-  border: 1px solid var(--grid);
+  background-color: var(--bg-main);
+  box-shadow: none;
 }
 
 .radio-option {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--grid);
-  background: var(--bg);
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   cursor: pointer;
+  transition: border-color var(--dur) ease, background-color var(--dur) ease;
 }
 
 .radio-option:hover {
-  border-color: var(--accent-dim);
+  border-color: var(--accent);
 }
 
 .radio-option:has(input:checked) {
   border-color: var(--accent);
+  background-color: var(--tint);
 }
 
 .radio-option span {
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  color: var(--text);
+  font-size: 0.85rem;
+  color: var(--text-primary);
 }
 
 .reestimate-row {
@@ -345,16 +525,24 @@ tfoot td:first-child {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 10px 12px;
-  border: 1px solid var(--grid);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur) ease, background-color var(--dur) ease;
 }
 
 .reestimate-row.active {
   border-color: var(--accent);
+  background-color: var(--tint);
 }
 
-.reestimate-row input {
-  width: 190px;
-  max-width: 50%;
-  text-align: right;
+/* ---- motion preferences ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

@@ -1,47 +1,61 @@
-/* ===== shell ===== */
+/* =============================================================
+   PM Tools · layout
+   Shell, masthead, tab bar, panels, grids, responsive steps.
+   Colours and skins come from theme.css.
+   ============================================================= */
+
 .shell {
-  max-width: 1100px;
+  max-width: 1120px;
   margin: 0 auto;
   padding-left: 24px;
   padding-right: 24px;
 }
 
+/* ---- masthead: nameplate left, controls right ---- */
 .site-header {
-  padding: 28px 0 20px;
+  padding: 28px 0 22px;
+  background-color: var(--bg-card);
+  border-bottom: 4px double var(--border);
 }
 
-/* ===== tab bar ===== */
+.site-header .shell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.theme-toggle {
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+/* ---- tab bar ---- */
 .tabbar {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--bg);
-  border-bottom: 1px solid var(--grid);
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.tabbar .shell {
+  display: flex;
+  gap: 6px;
 }
 
 .tab {
-  padding: 12px 18px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  border-bottom: 1px solid var(--grid);
-  cursor: pointer;
+  padding: 13px 16px;
 }
 
-.tab:hover {
-  color: var(--text);
-  border-bottom-color: var(--accent-dim);
-}
-
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-/* ===== panels ===== */
+/* ---- panels ---- */
 .tab-panels {
-  padding-top: 26px;
-  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 28px;
+  padding-bottom: 40px;
 }
 
 section[hidden] {
@@ -52,12 +66,44 @@ section[hidden] {
   display: flex;
   flex-direction: column;
   gap: 22px;
+  padding: 28px;
 }
 
+/* The notes sheet is a page, so it hugs its own reading column. */
+.panel:has(.notes) {
+  width: 100%;
+  max-width: 800px;
+  margin-inline: auto;
+}
+
+/* ---- tab change: the sheet settles into place ---- */
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel.active {
+  animation: slideFadeIn 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel.active {
+    animation: none;
+  }
+}
+
+/* ---- calculator inputs ---- */
 .top-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .field {
@@ -66,44 +112,148 @@ section[hidden] {
   gap: 6px;
 }
 
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+}
+
+/* ---- weekly table ---- */
 .table-wrap {
-  border: 1px solid var(--grid);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   overflow-x: auto;
 }
 
 .table-wrap table {
-  min-width: 580px;
+  min-width: 560px;
 }
 
+thead th {
+  padding: 11px 14px;
+}
+
+tbody td {
+  padding: 6px 10px;
+}
+
+tbody input {
+  width: 100%;
+  min-width: 96px;
+  padding: 7px 10px;
+}
+
+tfoot td {
+  padding: 13px 14px;
+}
+
+/* ---- results ---- */
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+}
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+/* ---- forecast method ---- */
+.fcac-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
 }
 
 .fcac-options {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 14px;
 }
 
+.radio-option {
+  padding: 12px 14px;
+}
+
+.reestimate-row {
+  padding: 12px 14px;
+}
+
+.reestimate-row input {
+  width: 210px;
+  max-width: 50%;
+  padding: 8px 12px;
+}
+
+.btn-reset {
+  align-self: flex-end;
+  padding: 10px 22px;
+}
+
+/* ---- footer ---- */
 .site-footer {
-  padding: 16px 0 24px;
-  border-top: 1px solid var(--grid);
+  padding: 18px 0 28px;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border);
 }
 
-/* ===== mobile ===== */
-@media (max-width: 720px) {
+/* ---- responsive ---- */
+@media (max-width: 900px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .shell {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .site-header {
+    padding-top: 22px;
+  }
+
+  .site-header .shell {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .site-title {
+    font-size: 1.3rem;
+  }
+
+  .theme-toggle {
+    justify-content: center;
+  }
+
+  .tabbar .shell {
+    gap: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tab {
+    padding: 12px 14px;
+  }
+
+  .panel {
+    padding: 20px 16px;
+  }
+
   .top-row,
   .results-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .reestimate-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
   }
 
   .reestimate-row input {
@@ -113,12 +263,6 @@ section[hidden] {
   }
 
   .btn-reset {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .tabbar .shell {
-    overflow-x: auto;
-    white-space: nowrap;
+    align-self: stretch;
   }
 }
