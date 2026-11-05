@@ -3,17 +3,44 @@
    Reading column, definition blocks, lists, and the two grids.
    ============================================================= */
 
-/* Prose keeps a book measure; the grids below are exhibits and may run wider. */
 /* Prose keeps a book measure; the grids below are exhibits and may run wider.
    The sheet itself is sized by .panel:has(.notes) in layout.css. */
-.note-block {
-  border-top: 1px solid var(--border);
-  padding: 30px 0;
+/* The chapter reads as a board of cards, not a run-on page. */
+.notes-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
 
-.note-block:first-child {
-  border-top: none;
-  padding-top: 0;
+.note-block {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: transform var(--dur) ease, border-color var(--dur) ease,
+    box-shadow var(--dur) ease;
+}
+
+.note-block:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+/* The lift is decoration; the border colour still reports the hover. */
+@media (prefers-reduced-motion: reduce) {
+  .note-block,
+  .note-block:hover {
+    transform: none;
+  }
+}
+
+/* An exhibit needs the whole board: a four-up grid inside a 370px card is
+   unreadable, so those blocks span every column. */
+.note-block:has(.constraints),
+.note-block:has(.lifecycle) {
+  grid-column: 1 / -1;
 }
 
 .note-block > p,
@@ -33,6 +60,11 @@
   margin-bottom: 18px;
 }
 
+/* Cards carry their own edge, so the last list row needs no rule of its own. */
+.note-block > :last-child {
+  margin-bottom: 0;
+}
+
 /* Chapter subheadings stay in the sans so serif marks the hierarchy top. */
 .note-block h3 {
   font-family: var(--font-body);
@@ -40,7 +72,7 @@
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin: 22px 0 8px;
 }
 
@@ -53,7 +85,7 @@
 .definition {
   position: relative;
   padding: 14px 18px;
-  background-color: var(--bg-main);
+  background-color: var(--bg-sunken);
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius) var(--radius) 0;
   color: var(--text-primary);
@@ -82,7 +114,7 @@
 .attr-list li {
   position: relative;
   padding: 7px 0 7px 22px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.98rem;
   line-height: 1.65;
   border-bottom: 1px solid var(--border);
@@ -111,7 +143,7 @@
   counter-increment: step;
   position: relative;
   padding: 9px 0 9px 40px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.98rem;
   line-height: 1.65;
   border-bottom: 1px solid var(--border);
@@ -138,7 +170,7 @@
   font-style: italic;
   font-size: 0.9rem;
   line-height: 1.7;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-top: 16px;
 }
 

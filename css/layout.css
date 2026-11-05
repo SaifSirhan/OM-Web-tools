@@ -1,14 +1,15 @@
 /* =============================================================
    PM Tools · layout
-   Shell, masthead, tab bar, panels, grids, responsive steps.
+   Shell, masthead, tab bar, sidebar, panels, grids, responsive steps.
    Colours and skins come from theme.css.
    ============================================================= */
 
+/* One rail for every band: masthead, tab bar, sidebar + content, footer. */
 .shell {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* ---- masthead: nameplate left, controls right ---- */
@@ -46,7 +47,177 @@
 }
 
 .tab {
-  padding: 13px 16px;
+  padding: 13px 12px;
+}
+
+/* ---- sidebar: the same five modules, as a course map ---- */
+.app-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 64px; /* clears the sticky tab bar, which measures 43px */
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.sidebar-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600; /* an h2 for the outline, but it reads as a rail label */
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 0.5rem 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur) ease;
+}
+
+.sidebar-link:last-child {
+  border-bottom: none;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ---- sidebar nesting: a chapter and the tool that belongs to it ---- */
+.sidebar-group {
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-sublink {
+  padding-left: 1.5rem !important;
+  font-size: 0.85rem !important;
+  border-bottom: none !important;
+}
+
+/* The parent stays lit while you are reading its child tool. */
+.sidebar-link.active-parent {
+  color: var(--accent-ink);
+}
+
+/* ---- hero: the first screen of chapter 01 ---- */
+.hero-section {
+  padding: 4rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+}
+
+.btn-hero {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+/* The tool CTA sits at the end of its chapter, on the reading edge. */
+.tool-cta-wrapper {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: flex-start; /* Bottom left */
+}
+
+/* ---- hidden tab: still in the router's order, out of the top bar ---- */
+.tab.hidden {
+  display: none;
+}
+
+/* ---- chapter steps: both directions, at the foot of every sheet ---- */
+.nav-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform var(--dur) ease, border-color var(--dur) ease,
+    color var(--dur) ease, background-color var(--dur) ease;
+}
+
+/* When only one step is left, the forward one still keeps the right edge. */
+.btn-next {
+  margin-left: auto;
+}
+
+.btn-nav:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-nav svg {
+  flex: none;
+}
+
+.btn-nav.hidden {
+  display: none;
+}
+
+/* ---- back to the chapter that owns a tool ---- */
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0;
+  align-self: flex-start;
+  transition: color var(--dur) ease;
+}
+
+.btn-back:hover {
+  color: var(--accent);
 }
 
 /* ---- panels ---- */
@@ -54,8 +225,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-top: 28px;
-  padding-bottom: 40px;
+  min-width: 0; /* a grid track is min-content by default; long tables must be able to shrink */
 }
 
 section[hidden] {
@@ -74,6 +244,19 @@ section[hidden] {
   width: 100%;
   max-width: 800px;
   margin-inline: auto;
+}
+
+/* With the notes as cards, the sheet itself becomes the page: the gradient and
+   grain read between the cards instead of hiding behind a white panel. */
+.panel:has(.notes-content) {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* The hero anchor lands below the sticky tab bar. */
+#notes-start {
+  scroll-margin-top: 64px;
 }
 
 /* ---- tab change: the sheet settles into place ---- */
@@ -96,6 +279,11 @@ section[hidden] {
 @media (prefers-reduced-motion: reduce) {
   .panel.active {
     animation: none;
+  }
+
+  .btn-nav,
+  .btn-nav:hover {
+    transform: none;
   }
 }
 
@@ -148,6 +336,13 @@ tfoot td {
   padding: 13px 14px;
 }
 
+/* The scorecard total is a rule and weight, not a filled band. */
+#scorecardTable tfoot td {
+  background: transparent;
+  border-top: 2px solid var(--border);
+  font-weight: 700; /* the heaviest Inter face this site loads */
+}
+
 /* ---- results ---- */
 .results-grid {
   display: grid;
@@ -189,31 +384,93 @@ tfoot td {
   padding: 8px 12px;
 }
 
+.btn-primary,
+.btn-reset {
+  padding: 10px 22px;
+}
+
 .btn-reset {
   align-self: flex-end;
-  padding: 10px 22px;
+}
+
+/* ---- scorecard tool ---- */
+.card {
+  padding: 24px;
+}
+
+.card > * + * {
+  margin-top: 14px;
+}
+
+#scorecardTable {
+  min-width: 760px;
+}
+
+/* Criteria and Comments are prose: left-aligned and given the wider columns. */
+#scorecardTable th:nth-child(1),
+#scorecardTable td:nth-child(1),
+#scorecardTable th:nth-child(5),
+#scorecardTable td:nth-child(5) {
+  width: 27%;
+  text-align: left;
+}
+
+#scorecardTable th:nth-child(2),
+#scorecardTable th:nth-child(3) {
+  width: 12%;
+}
+
+#scorecardTable th:nth-child(4) {
+  width: 14%;
+}
+
+#scorecardTable th:nth-child(6),
+#scorecardTable td:nth-child(6) {
+  width: 8%;
+  text-align: center;
+}
+
+#scorecardTable input[type='text'] {
+  text-align: left;
+}
+
+.scorecard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.weight-warning {
+  margin-top: 1rem;
 }
 
 /* ---- footer ---- */
 .site-footer {
-  padding: 18px 0 28px;
+  /* The lower band is left clear for the floating theme toggle, which would
+     otherwise sit on top of this line at the end of every page. */
+  padding: 18px 0 72px;
   background-color: var(--bg-card);
   border-top: 1px solid var(--border);
 }
 
 /* ---- responsive ---- */
 @media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr; /* Stack */
+    gap: 0;
+  }
+
+  .sidebar {
+    display: none; /* Hide sidebar, rely on top tab bar */
+  }
+
   .results-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 700px) {
-  .shell {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
   .site-header {
     padding-top: 22px;
   }
@@ -228,10 +485,6 @@ tfoot td {
     font-size: 1.3rem;
   }
 
-  .theme-toggle {
-    justify-content: center;
-  }
-
   .tabbar .shell {
     gap: 0;
     overflow-x: auto;
@@ -244,6 +497,22 @@ tfoot td {
 
   .panel {
     padding: 20px 16px;
+  }
+
+  .hero-section {
+    padding: 2.5rem 1rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .btn-hero {
+    padding: 0.85rem 1.5rem;
   }
 
   .top-row,

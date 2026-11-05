@@ -9,21 +9,26 @@
 :root {
   --radius: 6px;
   --radius-pill: 999px;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* One family for the whole site; the old display/body split stays as an alias
+     so notes.css and every component rule keep resolving. */
+  --font-body: var(--font);
+  --font-display: var(--font);
   --dur: 200ms;
+  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
-/* ---- light: paper and ink ---- */
+/* ---- light: soft lavender paper and plum ink ---- */
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg-main: #f8fafc;
+  --bg-main: #f8f6fc;
+  --bg-gradient-top: #ebe7f5;
   --bg-card: #ffffff;
-  --bg-sunken: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --bg-sunken: #f1ecf7;
+  --text-primary: #1e1b2e;
+  --text-secondary: #4b486a;
+  --text-muted: #666283;
   --accent: #7c3aed;
   --accent-hover: #6d28d9;
   --accent-ink: #6d28d9;
@@ -31,23 +36,27 @@
   --tint: rgba(124, 58, 237, 0.06);
   --tint-strong: rgba(124, 58, 237, 0.14);
   --ring: rgba(124, 58, 237, 0.25);
-  --status-positive: #047857;
+  --status-positive: #10b981;
+  --status-positive-ink: #047857;
   --status-positive-tint: rgba(16, 185, 129, 0.12);
-  --status-negative: #b91c1c;
+  --status-negative: #ef4444;
+  --status-negative-ink: #b91c1c;
+  --status-negative-strong: #8b0000;
   --status-negative-tint: rgba(239, 68, 68, 0.1);
-  --border: #e2e8f0;
-  --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --border: #e2e0ec;
+  --shadow: 0 10px 15px -3px rgba(75, 31, 111, 0.08), 0 4px 6px -4px rgba(75, 31, 111, 0.05);
 }
 
 /* ---- dark: the same document, read at night ---- */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --bg-main: #0f172a;
+  --bg-gradient-top: #080c14;
   --bg-card: #1e293b;
-  --bg-sunken: #162032;
+  --bg-sunken: #0b1120;
   --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-secondary: #94a3b8;
+  --text-muted: #8a93a8;
   --accent: #a78bfa;
   --accent-hover: #c4b5fd;
   --accent-ink: #c4b5fd;
@@ -56,11 +65,14 @@
   --tint-strong: rgba(167, 139, 250, 0.24);
   --ring: rgba(167, 139, 250, 0.38);
   --status-positive: #34d399;
+  --status-positive-ink: #34d399;
   --status-positive-tint: rgba(52, 211, 153, 0.16);
   --status-negative: #f87171;
+  --status-negative-ink: #f87171;
+  --status-negative-strong: #fca5a5;
   --status-negative-tint: rgba(248, 113, 113, 0.16);
   --border: #334155;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
 }
 
 /* ---- reset ---- */
@@ -78,10 +90,16 @@ html {
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 0.95rem;
   line-height: 1.65;
   color: var(--text-primary);
+  /* A wash from the top of the document down to the page colour, with the 4%
+     grain tiled over it. The grain keeps its own 200px cell; the gradient
+     covers the box. */
+  background-image: var(--noise), linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-main) 100%);
+  background-size: 200px 200px, 100% 100%;
+  background-repeat: repeat, no-repeat;
   background-color: var(--bg-main);
   transition: background-color var(--dur) ease, color var(--dur) ease;
 }
@@ -96,11 +114,16 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-family: var(--font);
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: 0.01em;
   color: var(--text-primary);
+}
+
+h3,
+h4 {
+  font-weight: 600;
 }
 
 p {
@@ -174,9 +197,9 @@ strong {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--text-secondary);
   cursor: pointer;
   transition: color var(--dur) ease, border-color var(--dur) ease;
@@ -327,7 +350,7 @@ input[type='radio']:focus-visible {
 }
 
 .btn-reset:hover {
-  color: var(--status-negative);
+  color: var(--status-negative-ink);
   background-color: var(--status-negative-tint);
   border-color: var(--status-negative);
 }
@@ -357,6 +380,16 @@ input[type='radio']:focus-visible {
   color: var(--accent-ink);
   background-color: var(--tint);
   border-color: var(--accent);
+}
+
+/* Floating, because the theme is a reading preference, not a masthead action:
+   it stays reachable at any point in a 4500px chapter. */
+#themeToggle {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  box-shadow: var(--shadow);
 }
 
 /* ---- table ---- */
@@ -474,13 +507,13 @@ tfoot td:first-child {
 
 .status.good,
 .status--under-budget {
-  color: var(--status-positive);
+  color: var(--status-positive-ink);
   background-color: var(--status-positive-tint);
 }
 
 .status.bad,
 .status--over-budget {
-  color: var(--status-negative);
+  color: var(--status-negative-ink);
   background-color: var(--status-negative-tint);
 }
 
@@ -534,6 +567,38 @@ tfoot td:first-child {
 .reestimate-row.active {
   border-color: var(--accent);
   background-color: var(--tint);
+}
+
+/* ---- scorecard ---- */
+.card {
+  background-color: var(--bg-main);
+  box-shadow: none;
+}
+
+.points-cell {
+  font-weight: 600;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  padding: 0 8px;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--status-negative-ink);
+  cursor: pointer;
+  transition: color var(--dur) ease;
+}
+
+.btn-remove:hover {
+  color: var(--status-negative-strong);
+}
+
+.btn-remove:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
 }
 
 /* ---- motion preferences ---- */

@@ -14,10 +14,50 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/notes.css" />
+  <style>
+    /* Theme change: the new sheet is painted in from the right, like turning to a
+       fresh page. View-transition pseudo-elements only exist during a transition,
+       so they live here beside the pre-paint theme script rather than in a sheet. */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+
+    ::view-transition-new(root) {
+      animation: wipeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+    }
+
+    @keyframes wipeIn {
+      from {
+        clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+      }
+
+      to {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
+    }
+
+    /* The 200ms colour transitions would be caught mid-flight by the new snapshot,
+       so the wipe reveals finished colours rather than a half-faded page. */
+    html.theme-wipe *,
+    html.theme-wipe *::before,
+    html.theme-wipe *::after {
+      transition: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-new(root) {
+        animation: none;
+        clip-path: none;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -26,7 +66,6 @@
         <h1 class="site-title">PROJECT MANAGEMENT TOOLS</h1>
         <p class="site-subtitle">DR RAMITA ABDUL RAHIM</p>
       </div>
-      <button id="themeToggle" type="button" class="theme-toggle" aria-label="Switch to dark mode">🌙 Dark</button>
     </div>
   </header>
 
@@ -35,13 +74,37 @@
       <button type="button" class="tab active" data-tab="ch01" aria-controls="tab-ch01" aria-selected="true">01 · PROJECT FUNDAMENTALS</button>
       <button type="button" class="tab" data-tab="ch02" aria-controls="tab-ch02" aria-selected="false">02 · IDENTIFICATION &amp; SELECTION</button>
       <button type="button" class="tab" data-tab="ch03" aria-controls="tab-ch03" aria-selected="false">03 · PROPOSALS &amp; CONTRACTS</button>
+      <button type="button" class="tab hidden" data-tab="ch03-tool" aria-controls="tab-ch03-tool" aria-selected="false">03 · PROPOSAL SCORECARD</button>
       <button type="button" class="tab" data-tab="ch07" aria-controls="tab-ch07" aria-selected="false">07 · COST &amp; EVM</button>
     </div>
   </nav>
 
-  <main class="shell tab-panels">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <h2 class="sidebar-title" id="sidebarTitle">COURSE MODULES</h2>
+      <nav class="sidebar-nav" id="sidebarNav" aria-labelledby="sidebarTitle">
+        <a href="#tab-ch01" class="sidebar-link" data-target="ch01">01 · PROJECT FUNDAMENTALS</a>
+        <a href="#tab-ch02" class="sidebar-link" data-target="ch02">02 · IDENTIFICATION &amp; SELECTION</a>
+
+        <div class="sidebar-group">
+          <a href="#tab-ch03" class="sidebar-link" data-target="ch03">03 · PROPOSALS &amp; CONTRACTS</a>
+          <a href="#tab-ch03-tool" class="sidebar-link sidebar-sublink" data-target="ch03-tool">↳ Proposal Scorecard</a>
+        </div>
+
+        <a href="#tab-ch07" class="sidebar-link" data-target="ch07">07 · COST &amp; EVM</a>
+      </nav>
+    </aside>
+
+    <main class="main-content tab-panels">
     <section id="tab-ch01" class="panel">
       <article class="notes">
+        <div class="hero-section">
+          <h2 class="hero-title">Master Project Management</h2>
+          <p class="hero-subtitle">Interactive tools and study materials for the modern project manager.</p>
+          <a href="#notes-start" class="btn-primary btn-hero">Start Learning ↓</a>
+        </div>
+
+        <div class="notes-content" id="notes-start">
         <section class="note-block">
           <h2>01 — WHAT IS A PROJECT</h2>
           <p class="definition">A project is an endeavor to accomplish a specific objective through a unique set of interrelated activities and the effective utilization of resources.</p>
@@ -188,7 +251,18 @@
           <p class="definition">The ultimate benefit of implementing project management techniques is having a satisfied customer — whether you are the customer of your own project or a business being paid by a customer to perform a project.</p>
           <p class="note-caption">Planning and communication are the two activities that most reliably prevent problems from occurring or minimize their impact when they do.</p>
         </section>
+        </div>
       </article>
+      <div class="nav-controls">
+        <button type="button" class="btn-nav btn-prev" data-direction="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Previous
+        </button>
+        <button type="button" class="btn-nav btn-next" data-direction="next">
+          Next
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     </section>
 
     <section id="tab-ch02" class="panel" hidden>
@@ -262,6 +336,16 @@
           </ul>
         </section>
       </article>
+      <div class="nav-controls">
+        <button type="button" class="btn-nav btn-prev" data-direction="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Previous
+        </button>
+        <button type="button" class="btn-nav btn-next" data-direction="next">
+          Next
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     </section>
 
     <section id="tab-ch03" class="panel" hidden>
@@ -322,6 +406,72 @@
           <p class="note-caption">Do not bid on everything. Submit to win a fair share, but only respond where you have a better than average chance to win.</p>
         </section>
       </article>
+      <div class="tool-cta-wrapper">
+        <button type="button" class="btn-primary" data-target="ch03-tool">Launch Proposal Scorecard →</button>
+      </div>
+
+      <div class="nav-controls">
+        <button type="button" class="btn-nav btn-prev" data-direction="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Previous
+        </button>
+        <button type="button" class="btn-nav btn-next" data-direction="next">
+          Next
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="tab-ch03-tool" class="panel" hidden>
+      <div class="card">
+        <button type="button" class="btn-back" data-target="ch03">← Back to Notes</button>
+
+        <h2 class="panel-title">Proposal Evaluation Scorecard</h2>
+        <p>Evaluate a proposal out of 1000 points based on weighted criteria.</p>
+
+        <div class="table-wrap">
+          <table id="scorecardTable">
+            <thead>
+              <tr>
+                <th scope="col">Criteria</th>
+                <th scope="col">Weight</th>
+                <th scope="col">Score (1-10)</th>
+                <th scope="col">Points</th>
+                <th scope="col">Comments</th>
+                <th scope="col" aria-label="Remove"></th>
+              </tr>
+            </thead>
+            <tbody id="scorecardBody"></tbody>
+            <tfoot>
+              <tr>
+                <td>Total</td>
+                <td id="totalWeight">0</td>
+                <td></td>
+                <td id="totalPoints">0</td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="scorecard-actions">
+          <button type="button" class="btn-primary" id="addCriteriaBtn">+ Add Criteria</button>
+          <button type="button" class="btn-reset" id="resetScorecardBtn">Reset</button>
+        </div>
+
+        <p id="weightWarning" class="status status--over-budget weight-warning hidden">⚠️ Total weight must equal 100.</p>
+      </div>
+      <div class="nav-controls">
+        <button type="button" class="btn-nav btn-prev" data-direction="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Previous
+        </button>
+        <button type="button" class="btn-nav btn-next" data-direction="next">
+          Next
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     </section>
 
     <section id="tab-ch07" class="panel" hidden>
@@ -402,8 +552,21 @@
       </div>
 
       <button type="button" class="btn-reset" id="resetBtn">Reset all</button>
+      <div class="nav-controls">
+        <button type="button" class="btn-nav btn-prev" data-direction="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Previous
+        </button>
+        <button type="button" class="btn-nav btn-next" data-direction="next">
+          Next
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     </section>
-  </main>
+    </main>
+  </div>
+
+  <button id="themeToggle" type="button" class="theme-toggle" aria-label="Switch to dark mode">🌙 Dark</button>
 
   <footer class="site-footer">
     <div class="shell">STATIC BUILD · NO ACCOUNTS · DATA STAYS IN BROWSER</div>
@@ -411,5 +574,6 @@
 
   <script src="js/app.js"></script>
   <script src="js/ch07-evm.js"></script>
+  <script src="js/ch03-eval.js"></script>
 </body>
 </html>
