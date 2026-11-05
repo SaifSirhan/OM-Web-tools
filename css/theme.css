@@ -9,16 +9,17 @@
 :root {
   --radius: 6px;
   --radius-pill: 999px;
-  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* One family for the whole site; the old display/body split stays as an alias
-     so notes.css and every component rule keep resolving. */
-  --font-body: var(--font);
-  --font-display: var(--font);
+  --font-sans: 'Lato', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  /* The pair every component rule reaches for: prose on the sans, the top of the
+     hierarchy on the serif. */
+  --font-body: var(--font-sans);
+  --font-display: var(--font-serif);
   --dur: 200ms;
-  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  --noise-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-/* ---- light: soft lavender paper and plum ink ---- */
+/* ---- light: soft lavender paper, deep indigo ink, one amber signal ---- */
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
@@ -29,13 +30,14 @@
   --text-primary: #1e1b2e;
   --text-secondary: #4b486a;
   --text-muted: #666283;
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
-  --accent-ink: #6d28d9;
+  --accent: #4c1d95;
+  --accent-hover: #5b21b6;
+  --accent-secondary: #d97706;
+  --accent-ink: #4c1d95;
   --accent-contrast: #ffffff;
-  --tint: rgba(124, 58, 237, 0.06);
-  --tint-strong: rgba(124, 58, 237, 0.14);
-  --ring: rgba(124, 58, 237, 0.25);
+  --tint: rgba(76, 29, 149, 0.06);
+  --tint-strong: rgba(76, 29, 149, 0.14);
+  --ring: rgba(76, 29, 149, 0.25);
   --status-positive: #10b981;
   --status-positive-ink: #047857;
   --status-positive-tint: rgba(16, 185, 129, 0.12);
@@ -43,8 +45,8 @@
   --status-negative-ink: #b91c1c;
   --status-negative-strong: #8b0000;
   --status-negative-tint: rgba(239, 68, 68, 0.1);
-  --border: #e2e0ec;
-  --shadow: 0 10px 15px -3px rgba(75, 31, 111, 0.08), 0 4px 6px -4px rgba(75, 31, 111, 0.05);
+  --border: #cbd5e1;
+  --shadow: 0 10px 15px -3px rgba(76, 29, 149, 0.08), 0 4px 6px -4px rgba(76, 29, 149, 0.05);
 }
 
 /* ---- dark: the same document, read at night ---- */
@@ -59,6 +61,7 @@
   --text-muted: #8a93a8;
   --accent: #a78bfa;
   --accent-hover: #c4b5fd;
+  --accent-secondary: #fbbf24;
   --accent-ink: #c4b5fd;
   --accent-contrast: #172033;
   --tint: rgba(167, 139, 250, 0.12);
@@ -87,17 +90,26 @@
 html {
   background-color: var(--bg-main);
   -webkit-text-size-adjust: 100%;
+  /* Anchors and the hero CTA glide; the JS still passes its own behaviour
+     where it needs to override this. */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
-  font-family: var(--font);
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   line-height: 1.65;
   color: var(--text-primary);
-  /* A wash from the top of the document down to the page colour, with the 4%
+  /* A wash from the top of the document down to the page colour, with the 5%
      grain tiled over it. The grain keeps its own 200px cell; the gradient
      covers the box. */
-  background-image: var(--noise), linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-main) 100%);
+  background-image: var(--noise-texture), linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-main) 100%);
   background-size: 200px 200px, 100% 100%;
   background-repeat: repeat, no-repeat;
   background-color: var(--bg-main);
@@ -114,16 +126,35 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font);
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
 h3,
 h4 {
   font-weight: 600;
+}
+
+/* Playfair announces, Lato explains. The display face carries the top of the
+   hierarchy; the tracked uppercase labels under it stay in the sans. */
+h1,
+h2,
+h3,
+.hero-title,
+.site-title {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+/* Interface text never inherits the display face, wherever it sits in the tree. */
+button,
+input,
+select,
+.tab,
+.sidebar-link,
+.btn-nav {
+  font-family: var(--font-sans);
 }
 
 p {
@@ -477,11 +508,15 @@ tfoot td:first-child {
 }
 
 .result-value {
-  font-family: var(--font-display);
+  /* Playfair sets its numbers as text figures by default — charming in a section
+     title, wrong in a result card. The calculator stays on the sans. */
+  font-family: var(--font-body);
   font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
+  /* Insurance for the serif fallback: Georgia's default figures are old-style. */
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--text-primary);
   word-break: break-word;
 }

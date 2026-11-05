@@ -19,19 +19,45 @@
   border-radius: var(--radius);
   padding: 1.5rem;
   box-shadow: var(--shadow);
-  transition: transform var(--dur) ease, border-color var(--dur) ease,
-    box-shadow var(--dur) ease;
+  opacity: 0.25;
+  filter: blur(4px);
+  transform: translateY(30px) scale(0.98);
+  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color var(--dur) ease, box-shadow var(--dur) ease;
+  will-change: opacity, filter, transform;
+}
+
+/* js/app.js clears a card once its top edge reaches the observer band, which
+   is the same viewport line, so a crossing is always the moment the state
+   changes. Cards above the band stay clear: read text never fogs again. */
+.note-block.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
 }
 
 .note-block:hover {
-  transform: translateY(-4px);
   border-color: var(--accent);
+}
+
+.note-block.is-visible:hover {
+  transform: translateY(-4px) scale(1);
 }
 
 /* The lift is decoration; the border colour still reports the hover. */
 @media (prefers-reduced-motion: reduce) {
-  .note-block,
-  .note-block:hover {
+  .note-block {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: border-color var(--dur) ease, box-shadow var(--dur) ease;
+    will-change: auto;
+  }
+
+  .note-block.is-visible,
+  .note-block.is-visible:hover {
     transform: none;
   }
 }
@@ -267,13 +293,63 @@
 }
 
 @media (max-width: 560px) {
-  .note-block {
-    padding: 24px 0;
-  }
-
+  /* The card skin needs its padding at every width; the old full-page rule
+     layout stripped it, which now presses text against the border. */
   .constraints,
   .constraints--pairs,
   .lifecycle {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- viewport fog ----
+   The page colour rises from the bottom edge so cards appear to emerge out of
+   the wash. Decorative, click-through, and only ever shown over a notes sheet:
+   the scorecard and the EVM forms keep their full-height clarity. */
+.viewport-fog {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 15vh;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--bg-main) 0%, transparent 100%);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity var(--dur) ease;
+}
+
+body.fog-on .viewport-fog {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport-fog {
+    transition: none;
+  }
+}
+
+/* ---- print ----
+   The reveal is a screen effect: a blurred card prints as a blurred card, and
+   none of the floating chrome belongs on paper. */
+@media print {
+  .note-block {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    /* A running reveal transition would otherwise report its in-flight value. */
+    transition: none !important;
+    will-change: auto;
+  }
+
+  .viewport-fog,
+  .scroll-track,
+  .sidebar,
+  .tabbar,
+  .site-header,
+  .nav-controls,
+  #themeToggle {
+    display: none !important;
   }
 }

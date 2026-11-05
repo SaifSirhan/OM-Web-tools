@@ -1,14 +1,25 @@
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+/* Chapter 01 opens as a landing page with the course map folded away. The first
+   deliberate step — a tab, a sidebar link, or Start Learning — reveals it for
+   the rest of the session. */
+let hasRevealedSidebar = false;
+
 const tabButtons = () => Array.from(document.querySelectorAll('.tab'));
 
 function activateTab(name) {
   const target = document.getElementById('tab-' + name);
   const order = tabButtons();
   const index = order.findIndex((t) => t.dataset.tab === name);
+  if (name !== 'ch01') hasRevealedSidebar = true;
 
   order.forEach((btn) => {
     const on = btn.dataset.tab === name;
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    // Thirteen chapters no longer fit the strip at 1280px; the bar scrolls, so
+    // bring the active tab into view when the chapter is opened from the rail.
+    if (on) btn.scrollIntoView({ inline: 'nearest', block: 'nearest' });
   });
 
   document.querySelectorAll('.sidebar-link').forEach((link) => {
@@ -43,8 +54,16 @@ function activateTab(name) {
   target.classList.add('active');
 
   // Panels are read top-down, and the Next button lives at the bottom of one,
-  // so every switch starts the new sheet at its head.
-  window.scrollTo(0, 0);
+  // so every switch starts the new sheet at its head. `instant` because the page
+  // itself glides (html { scroll-behavior: smooth }) and a switch should not.
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  const layout = document.querySelector('.app-layout');
+  if (name === 'ch01' && !hasRevealedSidebar) layout.classList.add('is-landing');
+  else layout.classList.remove('is-landing');
+
+  paintView();
+  buildTrack();
 }
 
 /* The sidebar is hand-written in index.html because it nests the scorecard
@@ -61,14 +80,131 @@ document.addEventListener('click', (e) => {
   activateTab(link.dataset.target);
 });
 
-/* The hero stays inside chapter 01: it walks the reader down to the notes. */
+/* ===== scroll reveal =====
+   Cards sit in the fog until their top edge reaches the middle band of the
+   viewport. 0.7 is that band's lower edge: the same line the observer watches,
+   so every state change is caught by a crossing. Above the line a card stays
+   clear — text you have already read never fogs again. */
+const REVEAL_EDGE = 0.7;
+let atDocumentEnd = false;
+let revealCards = [];
+
+function revealState(card) {
+  if (!card.offsetParent) return; // unrendered: its box is all zeros, so geometry would lie
+  card.classList.toggle('is-visible',
+    atDocumentEnd || card.getBoundingClientRect().top <= window.innerHeight * REVEAL_EDGE);
+}
+
+function paintView() {
+  const sheet = document.querySelector('.tab-panels > .panel:not([hidden])');
+  const notes = !!sheet && !!sheet.querySelector('article.notes');
+  document.body.classList.toggle('fog-on', notes && !atDocumentEnd);
+  if (notes) revealCards.forEach(revealState);
+}
+
+function initScrollReveal() {
+  revealCards = Array.from(document.querySelectorAll('.note-block'));
+  if (!revealCards.length) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => revealState(entry.target));
+  }, {
+    root: null,
+    rootMargin: '-30% 0px -30% 0px', // the middle 40% of the viewport
+    threshold: 0
+  });
+  revealCards.forEach((card) => observer.observe(card));
+  /* A crossing is reported with the next painted frame, which can land after
+     the card has already moved past the line, so re-read wherever the reader
+     stops and once a freshly opened sheet finishes sliding in. */
+  window.addEventListener('scrollend', paintView, { passive: true });
+  document.querySelector('.tab-panels').addEventListener('animationend', paintView);
+  window.addEventListener('resize', paintView);
+  /* The last row can sit below the band on a tall viewport, so reaching the
+     end of the document clears everything and lifts the fog off the footer. */
+  window.addEventListener('scroll', () => {
+    const end = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (end === atDocumentEnd) return;
+    atDocumentEnd = end;
+    paintView();
+  }, { passive: true });
+  window.addEventListener('resize', paintView);
+  paintView();
+}
+
+/* ===== scroll track =====
+   One dot per card in the open sheet. The track is aria-hidden and its dots
+   are out of the tab order on purpose: the sidebar already offers every one of
+   these jumps to the keyboard, and a second copy would only add stops. */
+const track = document.getElementById('scrollTrack');
+let trackCards = [];
+let trackIndex = -1;
+let dotObserver;
+
+function buildTrack() {
+  const sheet = document.querySelector('.tab-panels > .panel:not([hidden])');
+  trackCards = sheet ? Array.from(sheet.querySelectorAll('.note-block')) : [];
+  trackIndex = -1;
+  track.innerHTML = '';
+  if (!trackCards.length) {
+    track.classList.remove('has-dots');
+    if (dotObserver) dotObserver.disconnect();
+    return;
+  }
+  track.classList.add('has-dots');
+  trackCards.forEach((card, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'scroll-dot';
+    dot.dataset.index = String(i);
+    dot.tabIndex = -1;
+    track.appendChild(dot);
+  });
+  // The old dots are gone, so the observer watching the old cards goes with them.
+  if (dotObserver) dotObserver.disconnect();
+  dotObserver = new IntersectionObserver(markDots, {
+    root: null,
+    rootMargin: '-45% 0px -45% 0px',
+    threshold: 0
+  });
+  trackCards.forEach((card) => dotObserver.observe(card));
+  markDots();
+}
+
+function markDots() {
+  if (!trackCards.length) return;
+  const line = window.innerHeight * 0.5;
+  let current = 0;
+  trackCards.forEach((card, i) => {
+    // One pixel of slack: a card parked exactly on the line has reached it.
+    if (card.offsetParent && card.getBoundingClientRect().top <= line + 1) current = i;
+  });
+  const index = atDocumentEnd ? trackCards.length - 1 : current;
+  if (index === trackIndex) return; // only a real change replays the bop
+  trackIndex = index;
+  Array.from(track.children).forEach((dot, i) => dot.classList.toggle('active', i === index));
+}
+
+track.addEventListener('click', (e) => {
+  const dot = e.target.closest('.scroll-dot');
+  if (!dot) return;
+  const card = trackCards[Number(dot.dataset.index)];
+  if (!card) return;
+  card.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' });
+});
+/* The observer only reports a card as it crosses the midline, so a long jump
+   can leave the lit dot one row behind. Reading the position on each scroll
+   event is a handful of rect reads and keeps the dot honest wherever the
+   reader lands. */
+window.addEventListener('scroll', markDots, { passive: true });
+window.addEventListener('resize', markDots);
+
+/* The hero stays inside chapter 01: it reveals the course map and lets the
+   anchor glide down to the notes on the page's own smooth scroll. */
 const heroCta = document.querySelector('.btn-hero');
 if (heroCta) {
-  heroCta.addEventListener('click', (e) => {
-    const sheet = document.getElementById('notes-start');
-    if (!sheet) return;
-    e.preventDefault();
-    sheet.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+  heroCta.addEventListener('click', () => {
+    hasRevealedSidebar = true;
+    document.querySelector('.app-layout').classList.remove('is-landing');
   });
 }
 
@@ -98,7 +234,6 @@ function applyTheme(theme) {
   paintToggle(theme);
 }
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let wipes = 0;
 
 if (themeToggle) {
@@ -128,3 +263,5 @@ if (themeToggle) {
 }
 
 paintToggle(currentTheme());
+initScrollReveal();
+buildTrack();

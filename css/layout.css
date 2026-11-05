@@ -36,21 +36,39 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: var(--bg-card);
+  background-color: var(--bg-main);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
 
+/* ---- texture: the same grain the page carries, under the three UI bands ----
+   Each band keeps its own background-color, so the paper reads at two tones:
+   masthead and rail on the card colour, the tab bar on the page colour. */
+.site-header,
+.tabbar,
+.sidebar {
+  background-image: var(--noise-texture);
+  /* The tile has no intrinsic size of its own; without this it stretches to the
+     band instead of repeating the 200px cell the body uses. */
+  background-size: 200px 200px;
+  border-color: var(--border);
+}
+
 .tabbar .shell {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  /* Eight chapters: the row is wider than the page can hold at some sizes, so a
+     label never wraps — the bar scrolls instead of turning into two lines. */
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
 .tab {
-  padding: 13px 12px;
+  padding: 13px 10px;
+  font-size: 0.72rem;
 }
 
-/* ---- sidebar: the same five modules, as a course map ---- */
+/* ---- course map: a sticky rail beside the reading column ---- */
 .app-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -59,16 +77,64 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   align-items: start;
+  /* The landing page folds the rail away; the column animates it back in. */
+  transition: grid-template-columns 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    gap 0.6s ease;
+}
+
+.main-content {
+  /* A grid item with `margin: 0 auto` shrink-wraps to fit-content, which lets a
+     narrow sheet (CH02, four cards) drag the whole column down until its
+     auto-fit grid collapses to one column. Fill the track instead. */
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Landing: chapter 01 gets the full width and the rail waits until the reader
+   commits. Visibility is the part opacity cannot do — it keeps the nine hidden
+   links out of the tab order. */
+.app-layout.is-landing {
+  grid-template-columns: 0px 1fr;
+  gap: 0;
+}
+
+.app-layout.is-landing .sidebar {
+  opacity: 0;
+  transform: translateX(-50px);
+  pointer-events: none;
+  visibility: hidden;
+  padding: 0;
+  border: none;
 }
 
 .sidebar {
   position: sticky;
-  top: 64px; /* clears the sticky tab bar, which measures 43px */
-  background: var(--bg-card);
+  top: 100px;
+  /* Above the viewport fog (z 10): the wash fades cards as they enter, not the
+     navigation chrome. */
+  z-index: 11;
+  /* Longhand: the shared texture rule above sets background-image, and a
+     `background` shorthand here would wipe it out. */
+  background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.5rem;
   box-shadow: var(--shadow);
+  padding: 1.5rem;
+  /* Thirteen chapters: on a short viewport the map is taller than the space
+     under the tab bar, so it scrolls rather than running off the page. */
+  max-height: calc(100vh - 124px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+/* The rail owns the bottom-left corner now, so the reading preference floats on
+   the other side; the dot track sits mid-height and never shares that corner. */
+#themeToggle {
+  right: 24px;
+  left: auto;
 }
 
 .sidebar-title {
@@ -189,8 +255,8 @@
 }
 
 .btn-nav:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
   transform: translateY(-2px);
 }
 
@@ -259,6 +325,22 @@ section[hidden] {
   scroll-margin-top: 64px;
 }
 
+/* ---- tool slots ----
+   A tool that has not been built yet still needs to read as a reserved slot,
+   not as a broken card: dashed edge, sunken well, a centred label. */
+.interactive-placeholder {
+  background-color: var(--bg-sunken);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 3rem 1rem;
+  margin-top: 1rem;
+}
+
+.placeholder-label {
+  color: var(--text-muted);
+  text-align: center;
+}
+
 /* ---- tab change: the sheet settles into place ---- */
 @keyframes slideFadeIn {
   from {
@@ -279,6 +361,12 @@ section[hidden] {
 @media (prefers-reduced-motion: reduce) {
   .panel.active {
     animation: none;
+  }
+
+  /* The rail still arrives, it just does not spring there. */
+  .app-layout,
+  .sidebar {
+    transition: none;
   }
 
   .btn-nav,
@@ -340,7 +428,7 @@ tfoot td {
 #scorecardTable tfoot td {
   background: transparent;
   border-top: 2px solid var(--border);
-  font-weight: 700; /* the heaviest Inter face this site loads */
+  font-weight: 700; /* the heaviest Lato weight this site loads */
 }
 
 /* ---- results ---- */
@@ -454,15 +542,85 @@ tfoot td {
   border-top: 1px solid var(--border);
 }
 
+/* ---- scroll track ----
+   One dot per card in the open sheet, kept clear of the reading column by the
+   same gutter the floating toggle uses. js/app.js adds .has-dots only when the
+   sheet actually has cards, so the track never sits empty over a tool. */
+.scroll-track {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.scroll-track.has-dots {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scroll-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+/* The overshoot in that curve is the bop; the glow only rides with it. Amber is
+   the marker colour: it lights the dot you are on and, on the step buttons, the
+   direction you are about to take. */
+.scroll-dot.active {
+  background: var(--accent-secondary);
+  transform: scale(1.8);
+  box-shadow: 0 0 12px var(--accent-secondary);
+}
+
+.scroll-dot:hover:not(.active) {
+  background: var(--accent-secondary);
+  opacity: 0.6;
+  transform: scale(1.2);
+}
+
 /* ---- responsive ---- */
 @media (max-width: 900px) {
+  /* One column: the rail stacks above the sheet instead of sitting beside it. */
   .app-layout {
-    grid-template-columns: 1fr; /* Stack */
-    gap: 0;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .app-layout.is-landing {
+    grid-template-columns: 1fr;
+  }
+
+  /* Nothing to reveal a stacked rail out of — it just isn't there yet. */
+  .app-layout.is-landing .sidebar {
+    display: none;
   }
 
   .sidebar {
-    display: none; /* Hide sidebar, rely on top tab bar */
+    position: static;
+    width: auto;
+    /* Stacked, the rail is just a section of the page: no inner scroll well. */
+    max-height: none;
+    overflow: visible;
+    padding-bottom: 1.5rem;
+  }
+
+  /* No room for a third column of navigation once the sheet is full width. */
+  .scroll-track {
+    display: none;
   }
 
   .results-grid {
@@ -486,9 +644,7 @@ tfoot td {
   }
 
   .tabbar .shell {
-    gap: 0;
-    overflow-x: auto;
-    white-space: nowrap;
+    gap: 0; /* the base rule already keeps the row on one line and scrolls it */
   }
 
   .tab {
