@@ -212,6 +212,141 @@
   font-size: 1rem;
 }
 
+/* ---- interactive timeline: critical path vs slack ----
+   The initial geometry lives here rather than in app.js so a fresh page carries
+   no inline styles; app.js only writes inline left values while a block moves. */
+.interactive-timeline {
+  --track-label: 100px;
+  margin: 3rem auto;
+  max-width: 800px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.timeline-header {
+  margin-bottom: 1.5rem;
+}
+
+.timeline-title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.timeline-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.timeline-track-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.timeline-track {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.track-label {
+  width: var(--track-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.track-blocks {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-left: 2px solid var(--border);
+}
+
+.task-block {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* Prevent scrolling while dragging on mobile */
+  transition: box-shadow 0.2s;
+}
+
+.task-block:active {
+  cursor: grabbing;
+}
+
+.track-blocks[data-track="critical"] .task-block {
+  background-color: var(--accent);
+}
+
+.track-blocks[data-track="slack"] .task-block {
+  background-color: var(--accent-secondary);
+}
+
+/* Base plan: 0–15 design, 15–50 build, 50–70 test; docs float in the slack. */
+[data-track="critical"] [data-id="design"] { left: 0; width: 15%; }
+[data-track="critical"] [data-id="build"] { left: 15%; width: 35%; }
+[data-track="critical"] [data-id="test"] { left: 50%; width: 20%; }
+[data-track="slack"] [data-id="docs"] { left: 0; width: 30%; }
+
+.finish-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--status-negative);
+  /* 70% of the block area, which starts after the label column. */
+  left: calc(var(--track-label) + (100% - var(--track-label)) * 0.7);
+  transition: left 0.1s linear;
+}
+
+.finish-label {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--status-negative);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.timeline-status {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  /* The -ink token is the text-safe member of the status pair. */
+  color: var(--status-positive-ink);
+  margin-top: 1rem;
+  transition: color 0.3s;
+}
+
+.timeline-status.delayed {
+  color: var(--status-negative-ink);
+}
+
 /* The tool CTA sits at the end of its chapter, on the reading edge. */
 .tool-cta-wrapper {
   margin-top: 3rem;
@@ -669,6 +804,36 @@ tfoot td {
 
   .btn-hero {
     padding: 0.85rem 1.5rem;
+  }
+
+  /* Phone: the label column would leave the 15% design block ~24px wide, so
+     the labels move above their tracks and the full width carries the plan. */
+  .interactive-timeline {
+    --track-label: 0px;
+    padding: 1rem;
+    margin: 2rem auto 0;
+  }
+
+  .timeline-track {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    gap: 4px;
+  }
+
+  .track-label {
+    width: auto;
+    font-size: 0.65rem;
+  }
+
+  .track-blocks {
+    /* flex:1 would keep a 0 basis in the column; pin the track height instead. */
+    flex: none;
+    height: 36px;
+  }
+
+  .task-block {
+    font-size: 0.68rem;
   }
 
   .top-row,

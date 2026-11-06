@@ -262,6 +262,120 @@ if (themeToggle) {
   });
 }
 
+/* ---- chapter 01: critical path vs slack ----
+   The critical tasks are a chain: a task's shift carries into everything after
+   it, so the finish line is always the test task's right edge. Slack never
+   touches the finish line. Initial geometry is CSS; this only writes inline
+   values while a block moves. */
+function initTimeline() {
+  const widget = document.getElementById('timelineWidget');
+  if (!widget) return;
+
+  const finishLine = document.getElementById('finishLine');
+  const statusText = document.getElementById('timelineStatus');
+  const nodes = {
+    design: widget.querySelector('[data-id="design"]'),
+    build: widget.querySelector('[data-id="build"]'),
+    test: widget.querySelector('[data-id="test"]'),
+    docs: widget.querySelector('[data-id="docs"]')
+  };
+  if (!finishLine || !statusText || Object.values(nodes).some((n) => !n)) return;
+
+  const plan = {
+    design: { left: 0, width: 15 },
+    build: { left: 15, width: 35 },
+    test: { left: 50, width: 20 },
+    docs: { left: 0, width: 30 }
+  };
+  const chain = ['design', 'build', 'test'];
+  const shifts = { design: 0, build: 0, test: 0 };
+  const finishAtRest = 70; // test's right edge on the base plan
+  const finishRoom = 100 - finishAtRest; // nothing may be pushed off the track
+  const slackLimit = 40;
+
+  function placeChain() {
+    let carried = 0;
+    chain.forEach((id) => {
+      carried += shifts[id];
+      nodes[id].style.left = plan[id].left + carried + '%';
+    });
+  }
+
+  function setFinish(delay) {
+    const pos = finishAtRest + delay;
+    // The percentage must resolve against the block area, not the whole
+    // container: 100% here would include the label column a second time.
+    const raw = parseFloat(getComputedStyle(widget).getPropertyValue('--track-label'));
+    const label = Number.isFinite(raw) ? raw : 100;
+    finishLine.style.left = 'calc(' + label + 'px + (100% - ' + label + 'px) * ' + (pos / 100).toFixed(4) + ')';
+
+    if (delay > 0) {
+      const weeks = Math.round((delay / 10) * 10) / 10;
+      statusText.textContent = 'Project Delayed by ' + weeks + (weeks === 1 ? ' Week!' : ' Weeks!');
+      statusText.classList.add('delayed');
+    } else {
+      statusText.textContent = 'On Schedule';
+      statusText.classList.remove('delayed');
+    }
+  }
+
+  let drag = null;
+
+  function startDrag(e) {
+    const block = e.target.closest('.task-block');
+    if (!block || !widget.contains(block)) return;
+    const point = e.type.indexOf('touch') === 0 ? e.touches[0] : e;
+
+    drag = {
+      id: block.dataset.id,
+      block,
+      critical: block.closest('.track-blocks').dataset.track === 'critical',
+      startX: point.clientX,
+      startLeft: parseFloat(getComputedStyle(block).left),
+      track: block.parentElement.clientWidth
+    };
+    block.style.zIndex = '10';
+    block.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+  }
+
+  function doDrag(e) {
+    if (!drag) return;
+    if (e.cancelable) e.preventDefault();
+    const point = e.type.indexOf('touch') === 0 ? e.touches[0] : e;
+    if (!point) return;
+
+    const newLeft = Math.max(0, drag.startLeft + ((point.clientX - drag.startX) / drag.track) * 100);
+
+    if (!drag.critical) {
+      drag.block.style.left = Math.min(newLeft, slackLimit) + '%';
+      return;
+    }
+
+    const id = drag.id;
+    const at = chain.indexOf(id);
+    const before = chain.slice(0, at).reduce((sum, c) => sum + shifts[c], 0);
+    const after = chain.slice(at + 1).reduce((sum, c) => sum + shifts[c], 0);
+    shifts[id] = Math.max(0, Math.min(newLeft - plan[id].left - before, finishRoom - before - after));
+    placeChain();
+    setFinish(shifts.design + shifts.build + shifts.test);
+  }
+
+  function endDrag() {
+    if (!drag) return;
+    drag.block.style.zIndex = '';
+    drag.block.style.boxShadow = '';
+    drag = null;
+  }
+
+  widget.addEventListener('mousedown', startDrag);
+  window.addEventListener('mousemove', doDrag);
+  window.addEventListener('mouseup', endDrag);
+  widget.addEventListener('touchstart', startDrag, { passive: false });
+  window.addEventListener('touchmove', doDrag, { passive: false });
+  window.addEventListener('touchend', endDrag);
+}
+
 paintToggle(currentTheme());
 initScrollReveal();
 buildTrack();
+initTimeline();

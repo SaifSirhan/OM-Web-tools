@@ -120,6 +120,40 @@
           <h2 class="hero-title">Master Project Management</h2>
           <p class="hero-subtitle">Interactive tools and study materials for the modern project manager.</p>
           <a href="#notes-start" class="btn-primary btn-hero">Start Learning ↓</a>
+
+          <div class="interactive-timeline" id="timelineWidget">
+            <div class="timeline-header">
+              <span class="timeline-title">Interactive: Critical Path vs Slack</span>
+              <span class="timeline-subtitle">Drag the blocks to see how delays affect the project.</span>
+            </div>
+
+            <div class="timeline-track-container">
+              <!-- Track 1: Critical Path -->
+              <div class="timeline-track">
+                <div class="track-label">Critical Path</div>
+                <div class="track-blocks" data-track="critical">
+                  <div class="task-block" data-id="design" data-duration="20">Design</div>
+                  <div class="task-block" data-id="build" data-duration="40">Build</div>
+                  <div class="task-block" data-id="test" data-duration="20">Test</div>
+                </div>
+              </div>
+
+              <!-- Track 2: Slack -->
+              <div class="timeline-track">
+                <div class="track-label">Slack (Float)</div>
+                <div class="track-blocks" data-track="slack">
+                  <div class="task-block" data-id="docs" data-duration="30">Docs</div>
+                </div>
+              </div>
+
+              <!-- The moving Finish Line -->
+              <div class="finish-line" id="finishLine">
+                <span class="finish-label">Project Finish</span>
+              </div>
+            </div>
+
+            <div class="timeline-status" id="timelineStatus">On Schedule</div>
+          </div>
         </div>
 
         <div class="notes-content" id="notes-start">
