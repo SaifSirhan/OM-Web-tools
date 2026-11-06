@@ -320,6 +320,32 @@
     <section id="tab-ch02" class="panel" hidden>
       <article class="notes">
         <div class="notes-content">
+          <div class="interactive-scale" id="scaleWidget">
+            <div class="scale-header">
+              <span class="timeline-title">Interactive: Project Selection</span>
+              <span class="timeline-subtitle">Adjust the priority weights to see which project wins.</span>
+            </div>
+
+            <div class="scale-criteria">
+              <div class="criteria-row">
+                <label for="weight-cost">Cost (1-10)</label>
+                <input type="range" id="weight-cost" min="1" max="10" value="5">
+              </div>
+              <div class="criteria-row">
+                <label for="weight-time">Time (1-10)</label>
+                <input type="range" id="weight-time" min="1" max="10" value="5">
+              </div>
+              <div class="criteria-row">
+                <label for="weight-risk">Risk (1-10)</label>
+                <input type="range" id="weight-risk" min="1" max="10" value="5">
+              </div>
+            </div>
+
+            <div class="scale-results" id="scaleResults">
+              <!-- JS will populate Project A, B, C bars here -->
+            </div>
+          </div>
+
           <section class="note-block">
             <h2>01 — PROJECT IDENTIFICATION &amp; SELECTION</h2>
             <p class="definition">Projects start with recognizing a need, problem, or opportunity. Because organizations usually have more needs than resources, they must use a decision-making process to prioritize and select the project with the greatest overall benefit.</p>

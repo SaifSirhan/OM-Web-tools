@@ -379,3 +379,78 @@ paintToggle(currentTheme());
 initScrollReveal();
 buildTrack();
 initTimeline();
+
+/* ---- chapter 02: project selection weights ----
+   Widths are dynamic, so they cannot live in layout.css. They go through a
+   constructable stylesheet instead of inline styles: the zero-inline-style
+   contract holds, and reusing the bar elements keeps the width transition
+   alive between slider moves. */
+function initScale() {
+  const widget = document.getElementById('scaleWidget');
+  if (!widget) return;
+
+  const weightCost = document.getElementById('weight-cost');
+  const weightTime = document.getElementById('weight-time');
+  const weightRisk = document.getElementById('weight-risk');
+  const resultsContainer = document.getElementById('scaleResults');
+  if (!weightCost || !weightTime || !weightRisk || !resultsContainer) return;
+
+  // Fixed project scores (1-10)
+  const projects = [
+    { name: 'A', scores: { cost: 6, time: 3, risk: 4 } },
+    { name: 'B', scores: { cost: 4, time: 8, risk: 2 } },
+    { name: 'C', scores: { cost: 8, time: 5, risk: 6 } }
+  ];
+
+  const sheet = new CSSStyleSheet();
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+
+  const rows = projects.map((project) => {
+    const row = document.createElement('div');
+    row.className = 'project-bar-container';
+    row.dataset.project = project.name;
+    row.innerHTML =
+      '<div class="project-name"></div><div class="project-bar"></div><div class="winner-tag">WINNER</div>';
+    row.querySelector('.project-name').textContent = project.name;
+    resultsContainer.appendChild(row);
+    return row;
+  });
+
+  function calculate() {
+    const wCost = parseInt(weightCost.value, 10);
+    const wTime = parseInt(weightTime.value, 10);
+    const wRisk = parseInt(weightRisk.value, 10);
+
+    // Max possible points to normalize the bars (10 * 10 * 3 = 300)
+    const maxPoints = (wCost + wTime + wRisk) * 10;
+
+    const scores = projects.map((p) => {
+      const points = p.scores.cost * wCost + p.scores.time * wTime + p.scores.risk * wRisk;
+      return { name: p.name, points, percentage: (points / maxPoints) * 100 };
+    });
+
+    const winner = scores.reduce((prev, current) => (prev.points > current.points ? prev : current));
+
+    sheet.replaceSync(
+      scores
+        .map(
+          (s) =>
+            '.project-bar-container[data-project="' + s.name + '"] .project-bar{width:' + s.percentage.toFixed(2) + '%}'
+        )
+        .join('\n')
+    );
+
+    rows.forEach((row, i) => {
+      row.classList.toggle('winner', scores[i].name === winner.name);
+      row.querySelector('.project-bar').textContent = Math.round(scores[i].points) + ' pts';
+    });
+  }
+
+  weightCost.addEventListener('input', calculate);
+  weightTime.addEventListener('input', calculate);
+  weightRisk.addEventListener('input', calculate);
+
+  calculate();
+}
+
+initScale();
