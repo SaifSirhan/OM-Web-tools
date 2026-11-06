@@ -35,7 +35,9 @@
 .tabbar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  /* Above the rail (11): a tooltip belongs to the bar the reader is pointing at,
+     not to the column it happens to overlap. */
+  z-index: 12;
   background-color: var(--bg-main);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -56,16 +58,94 @@
 
 .tabbar .shell {
   display: flex;
-  gap: 4px;
-  /* Eight chapters: the row is wider than the page can hold at some sizes, so a
-     label never wraps — the bar scrolls instead of turning into two lines. */
-  white-space: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  /* Numbers only: thirteen circles need two rows on a phone and one everywhere
+     else, so the strip never needs a scrollbar. `visible`, not `hidden`, keeps
+     the hover tooltip from being clipped — a clipped axis would also turn the
+     bar into a scroll container. */
+  overflow: visible;
 }
 
 .tab {
-  padding: 13px 10px;
-  font-size: 0.72rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab:hover,
+.tab.active {
+  background-color: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* ---- tab tooltip: the title the number stands for ---- */
+.tab::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.tab:hover::after,
+.tab:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(5px);
+}
+
+/* The end circles would push their bubble past the viewport edge, and a hidden
+   axis cannot hold it, so those two anchor to their own side instead. */
+@media (max-width: 900px) {
+  .tab:first-child::after {
+    left: 0;
+    transform: translateY(10px);
+  }
+
+  .tab:first-child:hover::after,
+  .tab:first-child:focus-visible::after {
+    transform: translateY(5px);
+  }
+
+  .tab:last-child::after {
+    left: auto;
+    right: 0;
+    transform: translateY(10px);
+  }
+
+  .tab:last-child:hover::after,
+  .tab:last-child:focus-visible::after {
+    transform: translateY(5px);
+  }
 }
 
 /* ---- course map: a sticky rail beside the reading column ---- */
@@ -77,9 +157,6 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   align-items: start;
-  /* The landing page folds the rail away; the column animates it back in. */
-  transition: grid-template-columns 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    gap 0.6s ease;
 }
 
 .main-content {
@@ -89,23 +166,6 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-}
-
-/* Landing: chapter 01 gets the full width and the rail waits until the reader
-   commits. Visibility is the part opacity cannot do — it keeps the nine hidden
-   links out of the tab order. */
-.app-layout.is-landing {
-  grid-template-columns: 0px 1fr;
-  gap: 0;
-}
-
-.app-layout.is-landing .sidebar {
-  opacity: 0;
-  transform: translateX(-50px);
-  pointer-events: none;
-  visibility: hidden;
-  padding: 0;
-  border: none;
 }
 
 .sidebar {
@@ -127,7 +187,24 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease,
+    visibility 0s linear 0s;
+}
+
+/* The rail steps aside while the reader is on the hero or the cinematic band.
+   Visibility is the part opacity cannot do: it keeps the fourteen links out of
+   the tab order, delayed so the fade finishes first.
+   Stacked, the rail is part of the reading flow: hiding it would push the
+   notes up under the band, which would then bring the rail back — so on a
+   phone the map stays put and only the desktop rail steps aside. */
+@media (min-width: 901px) {
+  .sidebar.is-retracted {
+    transform: translateX(-30px);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition-delay: 0s, 0s, 0.5s;
+  }
 }
 
 /* The rail owns the bottom-left corner now, so the reading preference floats on
@@ -187,10 +264,20 @@
 
 /* ---- hero: the first screen of chapter 01 ---- */
 .hero-section {
+  /* Full bleed so the introduction centres on the viewport, not on the reading
+     column that sits right of the reserved rail track. */
+  width: 100cqw;
+  margin-left: calc(50% - 50cqw);
   padding: 4rem 2rem;
   text-align: center;
   border-bottom: 1px solid var(--border);
   margin-bottom: 2rem;
+}
+
+@media (min-width: 901px) {
+  .hero-section {
+    margin-left: calc(50% - 50cqw - 146px);
+  }
 }
 
 .hero-title {
@@ -212,23 +299,202 @@
   font-size: 1rem;
 }
 
-/* ---- interactive timeline: critical path vs slack ----
-   The initial geometry lives here rather than in app.js so a fresh page carries
-   no inline styles; app.js only writes inline left values while a block moves. */
-.interactive-timeline {
-  --track-label: 100px;
-  margin: 3rem auto;
-  max-width: 800px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  text-align: left;
+body {
+  container-type: inline-size;
+}
+
+/* Both cinematic bands share one full-bleed shell; the chapter-specific rules
+   below only add their own instruments. */
+.cinematic-band {
+  grid-column: 1 / -1;
+  position: relative;
+  width: 100cqw;
+  margin-left: calc(50% - 50cqw);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+  color: white;
+  border-block: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cinematic-timeline {
+  --track-label: 120px;
+  --finish-color: #10b981;
+}
+
+/* The rail column is always reserved, retracted or not, so the reading column's
+   centre stays 146px right of the viewport centre. */
+@media (min-width: 901px) {
+  .cinematic-band {
+    margin-left: calc(50% - 50cqw - 146px);
+  }
+}
+
+/* The scene holds for one viewport of scroll, then the next sheet slides over
+   it. Below the rail breakpoint the band is taller than the screen on a phone,
+   so it keeps scrolling in flow instead of pinning and clipping. */
+@media (min-width: 901px) {
+  .band-hold {
+    min-height: 200vh;
+  }
+
+  .cinematic-band {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+}
+
+/* Fourth wall: the laser reaches the edge of the page and the frame cracks. */
+.cracked-edge {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0), inset 0 0 90px 20px rgba(239, 68, 68, 0);
+  transition: opacity 0.4s ease, box-shadow 0.4s ease;
+}
+
+body.fourth-wall .cracked-edge {
+  opacity: 1;
+  box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0.75), inset 0 0 90px 20px rgba(239, 68, 68, 0.35);
+  animation: crackFlicker 0.9s steps(2, end) infinite;
+}
+
+.cinematic-band.fourth-wall .cinematic-content {
+  animation: glitchShift 0.42s steps(3, end) infinite;
+}
+
+.cinematic-band.fourth-wall .timeline-status {
+  text-shadow: 2px 0 0 rgba(167, 139, 250, 0.8), -2px 0 0 rgba(34, 211, 238, 0.8);
+}
+
+@keyframes crackFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes glitchShift {
+  0% { transform: translate3d(0, 0, 0); }
+  33% { transform: translate3d(-3px, 1px, 0); }
+  66% { transform: translate3d(2px, -2px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* The domain opens from a point to cover the whole band. */
+.domain-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at center, #1a0505 0%, #050508 70%);
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.8s ease, filter 0.8s ease;
+  pointer-events: none;
+}
+
+.cinematic-band.is-active .domain-bg {
+  clip-path: circle(150% at 50% 50%);
+}
+
+/* Once the sequence has played out, the glow dims so the work takes focus. */
+.cinematic-band.is-settled .domain-bg {
+  filter: brightness(0.6);
+}
+
+.cinematic-timeline.delayed {
+  --finish-color: #ef4444;
+}
+
+.cinematic-timeline.delayed .domain-bg {
+  background: radial-gradient(circle at center, #3a0a0a 0%, #050508 70%);
+}
+
+/* The grid lives inside the sphere, so it expands with it. */
+.domain-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.cinematic-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1000px;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1000px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+/* The particle field sits between the sphere and the sheet, and never eats a drag. */
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.cinematic-band.is-active .particle-canvas {
+  opacity: 1;
+  transition-delay: 1s;
+}
+
+/* The plane the tracks live on; the tilt is written to a constructed sheet. */
+.tilt-wrapper {
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
+
+.cinematic-band.is-active .cinematic-content {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.8s;
 }
 
 .timeline-header {
-  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.cinematic-title {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 30px rgba(255,255,255,0.4);
+  transition: text-shadow 0.8s ease;
+}
+
+.cinematic-band.is-settled .cinematic-title {
+  text-shadow: 0 0 18px rgba(255,255,255,0.18);
+}
+
+.cinematic-subtitle {
+  color: #888;
+  font-size: 1rem;
 }
 
 .timeline-title {
@@ -246,31 +512,243 @@
 
 .timeline-track-container {
   position: relative;
+  z-index: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-bottom: 2rem;
+  gap: 3rem;
+  padding-bottom: 4rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.cinematic-band.is-active .timeline-track-container {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 1.5s;
+}
+
+.timeline-status {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.cinematic-band.is-active .timeline-status {
+  opacity: 1;
+  transform: translateY(0);
+  /* Only the reveal waits its turn; the alert colour must react instantly. */
+  transition-delay: 2.4s, 2.4s, 0s, 0s;
+}
+
+/* The controls stay inert until the sequence has finished. */
+.cinematic-timeline:not(.is-settled) .task-block {
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Leaving the band snaps the reveal back to its closed frame, so a quick
+   re-entry still plays the whole sequence from the start. */
+.cinematic-band.is-reset .domain-bg,
+.cinematic-band.is-reset .cinematic-content,
+.cinematic-band.is-reset .timeline-track-container,
+.cinematic-band.is-reset .timeline-status {
+  transition: none;
+}
+
+/* ---- chapter 03: the core ----
+   The one band that follows the theme. Light gets a warm paper sky and amber
+   flares; dark keeps the deep-space ink. The notes sheet begins where the band
+   stops holding, so the chapter rides up across the pinned scene. */
+.ch03-hold {
+  position: relative;
+}
+
+.ch03-band {
+  color: var(--text-primary);
+  border-block-color: var(--border);
+}
+
+.ch03-band .domain-bg {
+  background: radial-gradient(circle at 50% 42%, #fffdf6 0%, #f7f1e2 48%, #e9dfca 100%);
+}
+
+.ch03-band .domain-bg::after {
+  background-image:
+    linear-gradient(rgba(120, 92, 32, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 92, 32, 0.08) 1px, transparent 1px);
+}
+
+.ch03-band .cinematic-title {
+  color: var(--text-primary);
+  text-shadow: 0 0 34px rgba(217, 119, 6, 0.25);
+}
+
+.ch03-band.is-settled .cinematic-title {
+  text-shadow: 0 0 16px rgba(217, 119, 6, 0.16);
+}
+
+/* The shared settle dim is tuned for the dark sphere; on warm paper it reads
+   as mud. The sheet already covers the scene when it settles. */
+.ch03-band.is-settled .domain-bg {
+  filter: none;
+}
+
+.ch03-band .cinematic-subtitle {
+  color: var(--text-secondary);
+}
+
+.ch03-content {
+  z-index: 3;
+  /* Centred text sits high enough to stay clear of the rising sheet. */
+  padding: 4rem 2rem 14vh;
+}
+
+.ch03-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  /* Amber-700 rather than the token: the token amber is 3.4:1 on the sky. */
+  color: #b45309;
+  margin-bottom: 1.1rem;
+}
+
+.ch03-cue {
+  margin-top: 2.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The wireframe sits over the sky and under the stars. */
+.ch03-core {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+
+.ch03-band .particle-canvas {
+  z-index: 2;
+}
+
+.ch03-band.is-active .ch03-core {
+  opacity: 1;
+  /* Matches the title's return instead of the 2.2s first-reveal fade. */
+  transition-duration: 0.9s;
+  transition-delay: 0.25s;
+}
+
+.ch03-sheet {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 2.75rem clamp(1.1rem, 4vw, 2rem) 1.5rem;
+  background-color: var(--bg-main);
+  border-top: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -30px 60px rgba(30, 27, 46, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch03-core {
+    transition: none;
+  }
+}
+
+/* Where the sheet can rise over the scene, the scene steps back first: the
+   title fades before the sheet reaches it, so it never reads as clipped. */
+@media (min-width: 901px) {
+  /* The shared reveal holds the content back 0.8s; this scene hands over on
+     the reader's scroll instead, so the delay would leave the title sitting
+     under the sheet for most of a second. */
+  .ch03-band.is-active .ch03-content {
+    transition: opacity 0.6s ease, transform 1s ease;
+    transition-delay: 0s;
+  }
+
+  .ch03-band.is-veiled .ch03-content,
+  .ch03-band.is-veiled .ch03-core {
+    opacity: 0;
+  }
+
+  .ch03-band.is-veiled .ch03-core {
+    transition: opacity 0.5s ease;
+  }
+}
+
+/* Dark keeps the shell the other bands live in. */
+:root[data-theme='dark'] .ch03-band {
+  color: #fff;
+  border-block-color: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme='dark'] .ch03-band .domain-bg {
+  background: radial-gradient(circle at center, #171033 0%, #05050b 72%);
+}
+
+:root[data-theme='dark'] .ch03-band .domain-bg::after {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+:root[data-theme='dark'] .ch03-band .cinematic-title {
+  color: #fff;
+  text-shadow: 0 0 30px rgba(167, 139, 250, 0.5);
+}
+
+:root[data-theme='dark'] .ch03-band .cinematic-subtitle {
+  color: #9aa8c0;
+}
+
+:root[data-theme='dark'] .ch03-band.is-settled .domain-bg {
+  filter: brightness(0.6);
+}
+
+:root[data-theme='dark'] .ch03-band .ch03-eyebrow {
+  color: var(--accent-secondary);
+}
+
+:root[data-theme='dark'] .ch03-cue {
+  color: #8a93a8;
+}
+
+:root[data-theme='dark'] .ch03-sheet {
+  box-shadow: 0 -30px 60px rgba(0, 0, 0, 0.45);
 }
 
 .timeline-track {
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 60px;
 }
 
 .track-label {
   width: var(--track-label);
+  flex: none;
   font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #999;
+  text-align: right;
+  padding-right: 2rem;
 }
 
 .track-blocks {
   position: relative;
   flex: 1;
   height: 100%;
-  border-left: 2px solid var(--border);
+  border-left: 1px solid #333;
 }
 
 .task-block {
@@ -280,26 +758,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font: 700 0.9rem var(--font-sans);
+  letter-spacing: 0.05em;
   color: white;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: grab;
   user-select: none;
-  touch-action: none; /* Prevent scrolling while dragging on mobile */
-  transition: box-shadow 0.2s;
+  touch-action: none;
+  text-transform: uppercase;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
 }
 
-.task-block:active {
+.task-block.is-dragging {
+  z-index: 10;
   cursor: grabbing;
+  transform: scale(1.05) translateY(-5px);
 }
 
 .track-blocks[data-track="critical"] .task-block {
-  background-color: var(--accent);
+  background-color: rgba(76, 29, 149, 0.2);
+  border: 2px solid #7c3aed;
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), inset 0 0 10px rgba(124, 58, 237, 0.4);
+}
+
+.track-blocks[data-track="critical"] .task-block:hover,
+.track-blocks[data-track="critical"] .task-block.is-dragging {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8), inset 0 0 15px rgba(124, 58, 237, 0.6);
 }
 
 .track-blocks[data-track="slack"] .task-block {
-  background-color: var(--accent-secondary);
+  background-color: rgba(217, 119, 6, 0.2);
+  border: 2px solid #d97706;
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.4), inset 0 0 10px rgba(217, 119, 6, 0.4);
 }
 
 /* Base plan: 0–15 design, 15–50 build, 50–70 test; docs float in the slack. */
@@ -310,41 +800,79 @@
 
 .finish-line {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: -20px;
+  bottom: -20px;
   width: 2px;
-  background-color: var(--status-negative);
-  /* 70% of the block area, which starts after the label column. */
+  pointer-events: none;
+  background-color: var(--finish-color);
   left: calc(var(--track-label) + (100% - var(--track-label)) * 0.7);
-  transition: left 0.1s linear;
+  box-shadow: 0 0 15px var(--finish-color), 0 0 30px var(--finish-color);
+  transition: left 0.1s linear, background-color 0.4s, box-shadow 0.4s;
+}
+
+.finish-laser {
+  position: absolute;
+  inset: 0 -2px;
+  background: inherit;
+  filter: blur(4px);
+  opacity: 0.8;
+  animation: pulseLaser 2s infinite;
+}
+
+@keyframes pulseLaser {
+  0%, 100% { opacity: 0.5; transform: scaleX(1); }
+  50% { opacity: 1; transform: scaleX(2); }
 }
 
 .finish-label {
   position: absolute;
-  top: -20px;
+  top: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--status-negative);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 6px;
+  background-color: var(--finish-color);
+  color: #050508;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
   border-radius: 4px;
   white-space: nowrap;
+  box-shadow: 0 0 10px var(--finish-color);
+  transition: background-color 0.4s, box-shadow 0.4s;
 }
 
 .timeline-status {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  /* The -ink token is the text-safe member of the status pair. */
-  color: var(--status-positive-ink);
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: 0.2em;
+  color: var(--finish-color);
   margin-top: 1rem;
-  transition: color 0.3s;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px var(--finish-color);
+  transition: opacity 0.8s ease, transform 0.8s ease, color 0.4s, text-shadow 0.4s;
 }
 
-.timeline-status.delayed {
-  color: var(--status-negative-ink);
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-timeline,
+  .domain-bg,
+  .cinematic-content,
+  .cinematic-title,
+  .timeline-track-container,
+  .cinematic-timeline .task-block,
+  .cinematic-timeline .finish-line,
+  .cinematic-timeline .finish-label,
+  .cinematic-timeline .timeline-status { transition: none; }
+  .tilt-wrapper { transition: none; transform: none !important; }
+  .particle-canvas { transition: none; opacity: 1; }
+  .cracked-edge { transition: none; }
+  body.fourth-wall .cracked-edge { animation: none; }
+  .cinematic-band.fourth-wall .cinematic-content { animation: none; }
+  .finish-laser { animation: none; }
+  .task-block.is-dragging { transform: none; }
 }
 
 /* The tool CTA sits at the end of its chapter, on the reading edge. */
@@ -499,7 +1027,6 @@ section[hidden] {
   }
 
   /* The rail still arrives, it just does not spring there. */
-  .app-layout,
   .sidebar {
     transition: none;
   }
@@ -735,15 +1262,6 @@ tfoot td {
     gap: 1.5rem;
   }
 
-  .app-layout.is-landing {
-    grid-template-columns: 1fr;
-  }
-
-  /* Nothing to reveal a stacked rail out of — it just isn't there yet. */
-  .app-layout.is-landing .sidebar {
-    display: none;
-  }
-
   .sidebar {
     position: static;
     width: auto;
@@ -806,13 +1324,18 @@ tfoot td {
     padding: 0.85rem 1.5rem;
   }
 
-  /* Phone: the label column would leave the 15% design block ~24px wide, so
-     the labels move above their tracks and the full width carries the plan. */
-  .interactive-timeline {
-    --track-label: 0px;
-    padding: 1rem;
-    margin: 2rem auto 0;
+  .cinematic-band {
+    min-height: 80vh;
   }
+
+  .cinematic-timeline {
+    --track-label: 0px;
+  }
+
+  .cinematic-content { padding: 3rem 1rem; }
+  .cinematic-title { font-size: 2rem; }
+  .cinematic-timeline .timeline-header { margin-bottom: 3rem; }
+  .cinematic-timeline .finish-line { display: none; }
 
   .timeline-track {
     flex-direction: column;
@@ -822,18 +1345,22 @@ tfoot td {
   }
 
   .track-label {
-    width: auto;
-    font-size: 0.65rem;
+    width: 100%;
+    text-align: left;
+    padding-right: 0;
   }
 
   .track-blocks {
-    /* flex:1 would keep a 0 basis in the column; pin the track height instead. */
     flex: none;
-    height: 36px;
+    width: 100%;
+    height: 50px;
+    border-left: none;
+    border-top: 1px solid #333;
   }
 
   .task-block {
-    font-size: 0.68rem;
+    font-size: 0.6rem;
+    letter-spacing: 0;
   }
 
   .top-row,
@@ -857,206 +1384,368 @@ tfoot td {
   }
 }
 
-/* ---- chapter 02: interactive project selection ----
-   Bar widths are dynamic, so js/app.js writes them through a constructable
-   stylesheet rather than inline styles; this file only owns the skin. */
-.interactive-scale {
-  grid-column: 1 / -1;
-  margin: 3rem auto;
-  max-width: 800px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  text-align: left;
+/* ---- chapter 02: the selection matrix ----
+   The band reuses CH01's shell, sphere and field. Bar heights are dynamic, so
+   js/app.js writes them through a constructable stylesheet rather than inline
+   styles; this file only owns the skin. */
+.cinematic-scale .scale-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: end;
+  width: 100%;
+  max-width: 900px;
+  margin-top: 2rem;
 }
 
-.scale-header {
-  margin-bottom: 1.5rem;
-}
-
-.scale-criteria {
+.scale-controls {
   display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
 .criteria-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  flex: 1;
-  min-width: 150px;
 }
 
 .criteria-row label {
   font-size: 0.75rem;
   font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: #888;
+}
+
+.val-display {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
 }
 
 /* The visible thumb is 18px; the 24px input box keeps the touch target above
    the 24px minimum without changing the track. */
 .criteria-row input[type='range'] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 24px;
   width: 100%;
-  background-color: transparent;
+  height: 24px;
+  appearance: none;
+  background: transparent;
+  border: none;
   cursor: pointer;
 }
 
 .criteria-row input[type='range']::-webkit-slider-runnable-track {
-  width: 100%;
   height: 6px;
-  cursor: pointer;
-  background-color: var(--border);
   border-radius: 3px;
+  background: #333;
 }
 
 .criteria-row input[type='range']::-webkit-slider-thumb {
-  height: 18px;
+  appearance: none;
   width: 18px;
-  border-radius: 50%;
-  background-color: var(--accent);
-  cursor: pointer;
-  -webkit-appearance: none;
+  height: 18px;
   margin-top: -6px;
-  box-shadow: 0 0 0 3px rgba(76, 29, 149, 0.2);
+  border-radius: 50%;
+  background: #7c3aed;
+  box-shadow: 0 0 10px #7c3aed;
 }
 
 .criteria-row input[type='range']::-moz-range-track {
-  width: 100%;
   height: 6px;
-  background-color: var(--border);
   border-radius: 3px;
+  background: #333;
 }
 
 .criteria-row input[type='range']::-moz-range-thumb {
-  height: 18px;
   width: 18px;
-  border: 0;
+  height: 18px;
+  border: none;
   border-radius: 50%;
-  background-color: var(--accent);
+  background: #7c3aed;
+  box-shadow: 0 0 10px #7c3aed;
 }
 
 .criteria-row input[type='range']:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 2px solid #a78bfa;
+  outline-offset: 4px;
 }
 
-.scale-results {
+/* The equalizer grows from a shared baseline instead of a horizontal scale. */
+.equalizer-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 2rem;
+  height: 300px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 10px;
+}
+
+.eq-bar-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.project-bar-container {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  height: 40px;
-}
-
-.project-name {
-  width: 30px;
-  flex: none;
-  font-weight: 700;
-  font-family: var(--font-serif);
-  color: var(--text-primary);
-}
-
-.project-bar {
-  height: 100%;
-  border-radius: 4px;
-  background-color: var(--text-muted);
-  opacity: 0.5;
-  display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 10px;
+  gap: 1rem;
+  width: 80px;
+  height: 100%;
+}
+
+.eq-bar {
+  position: relative;
+  width: 100%;
+  height: 10%;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(to top, rgba(76, 29, 149, 0.2), #7c3aed);
+  border: 1px solid #7c3aed;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4), inset 0 0 10px rgba(124, 58, 237, 0.4);
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s,
+    background 0.3s, border-color 0.3s;
+}
+
+.eq-bar.winner {
+  background: linear-gradient(to top, rgba(16, 185, 129, 0.2), #10b981);
+  border-color: #10b981;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.8), inset 0 0 15px rgba(16, 185, 129, 0.6);
+}
+
+.eq-label {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.eq-bar-wrapper.winner .eq-label {
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.eq-points {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--bg-card);
-  transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s, opacity 0.3s;
-  min-width: 30px;
-}
-
-.project-bar-container.winner .project-bar {
-  background-color: var(--status-positive);
-  opacity: 1;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--status-positive) 40%, transparent);
-}
-
-.project-bar-container.winner .project-name {
-  color: var(--status-positive);
-}
-
-.winner-tag {
-  display: none;
-  flex: none;
-  font-size: 0.65rem;
-  font-weight: 700;
-  background-color: var(--status-positive);
   color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 10px;
-  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-.project-bar-container.winner .winner-tag {
-  display: inline-block;
+.eq-bar:hover .eq-points,
+.eq-bar:focus-within .eq-points {
+  opacity: 1;
 }
 
-@keyframes popIn {
-  0% {
-    transform: scale(0);
-    opacity: 0;
+@media (max-width: 700px) {
+  .cinematic-scale .scale-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@media (max-width: 560px) {
-  .interactive-scale {
-    padding: 1rem;
-    margin: 2rem auto 0;
+  .equalizer-container {
+    height: 220px;
+    gap: 1rem;
   }
 
-  .scale-criteria {
-    gap: 1.25rem;
-  }
-
-  /* One letter still reads at 20px; the extra 10px, tighter gaps and small tag
-     margin keep the 63% winner bar at its true share instead of letting flex
-     shrink it to make room for the badge. */
-  .project-bar-container {
-    gap: 0.5rem;
-  }
-
-  .project-name {
-    width: 20px;
-  }
-
-  .winner-tag {
-    margin-left: 4px;
+  .eq-bar-wrapper {
+    width: 64px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-bar {
+  .eq-bar,
+  .eq-points {
+    transition: none;
+  }
+}
+
+
+/* ---- chapter 04: interactive WBS ----
+   A closed branch collapses to zero width instead of only fading, so the tree
+   grows to the right like a horizontal accordion; visibility keeps the hidden
+   buttons out of the tab order. */
+.interactive-wbs {
+  grid-column: 1 / -1;
+  /* A grid item with a wide, scrollable child needs an explicit zero floor,
+     otherwise its min-content width widens the whole page on a phone. */
+  min-width: 0;
+  width: 100%;
+  margin: 3rem auto;
+  max-width: 900px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  text-align: left;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.wbs-tree {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.wbs-branch {
+  display: flex;
+  align-items: center;
+}
+
+/* ---- nodes ---- */
+.wbs-node {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
+
+.wbs-node:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.root-node {
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.root-node:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--accent-contrast);
+}
+
+.l1-node {
+  border-left: 3px solid var(--accent);
+}
+
+.leaf-node {
+  background-color: var(--bg-card);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+/* ---- connecting lines ---- */
+.wbs-branch > .wbs-node::after {
+  content: '';
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  width: 1rem;
+  height: 1px;
+  background-color: var(--border);
+  display: none;
+}
+
+/* The line only exists while the branch it points at is open. */
+.wbs-branch > .wbs-node:has(+ .wbs-children.is-open)::after {
+  display: block;
+}
+
+/* ---- children container: collapsed by default ---- */
+.wbs-children {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 1px solid transparent;
+  position: relative;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-20px);
+  pointer-events: none;
+  visibility: hidden;
+  transition: max-width 0.35s ease, margin-left 0.35s ease, padding-left 0.35s ease,
+    border-left-color 0.35s ease, opacity 0.3s ease, transform 0.3s ease,
+    visibility 0s linear 0.35s;
+}
+
+.wbs-children.is-open {
+  max-width: 34rem;
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  border-left-color: var(--border);
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* A nested open container would otherwise re-show itself inside a collapsed
+   ancestor, because visibility is explicitly set to visible. */
+.wbs-children:not(.is-open) .wbs-children {
+  visibility: hidden;
+}
+
+/* ---- shatter pop ---- */
+@keyframes shatterIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.wbs-children.is-open > .wbs-branch,
+.wbs-children.is-open > .leaf-node {
+  animation: shatterIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.wbs-children.is-open > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.wbs-children.is-open > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.wbs-children.is-open > *:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+@media (max-width: 560px) {
+  .interactive-wbs {
+    padding: 1rem;
+    margin: 2rem auto 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wbs-node {
     transition: none;
   }
 
-  .winner-tag {
+  .wbs-children {
+    transition: none;
+  }
+
+  .wbs-children.is-open > .wbs-branch,
+  .wbs-children.is-open > .leaf-node {
     animation: none;
   }
 }

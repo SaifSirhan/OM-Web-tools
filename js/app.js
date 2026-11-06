@@ -1,25 +1,16 @@
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-/* Chapter 01 opens as a landing page with the course map folded away. The first
-   deliberate step — a tab, a sidebar link, or Start Learning — reveals it for
-   the rest of the session. */
-let hasRevealedSidebar = false;
-
 const tabButtons = () => Array.from(document.querySelectorAll('.tab'));
 
 function activateTab(name) {
   const target = document.getElementById('tab-' + name);
   const order = tabButtons();
   const index = order.findIndex((t) => t.dataset.tab === name);
-  if (name !== 'ch01') hasRevealedSidebar = true;
 
   order.forEach((btn) => {
     const on = btn.dataset.tab === name;
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-selected', on ? 'true' : 'false');
-    // Thirteen chapters no longer fit the strip at 1280px; the bar scrolls, so
-    // bring the active tab into view when the chapter is opened from the rail.
-    if (on) btn.scrollIntoView({ inline: 'nearest', block: 'nearest' });
   });
 
   document.querySelectorAll('.sidebar-link').forEach((link) => {
@@ -43,7 +34,8 @@ function activateTab(name) {
     btn.classList.toggle('hidden', !step);
     if (step) {
       btn.dataset.target = step.dataset.tab;
-      btn.setAttribute('aria-label', (back ? 'Previous: ' : 'Next: ') + step.textContent.trim());
+      // The circle shows a number, so the step names itself with the full title.
+      btn.setAttribute('aria-label', (back ? 'Previous: ' : 'Next: ') + step.getAttribute('aria-label'));
     } else {
       delete btn.dataset.target;
       btn.removeAttribute('aria-label');
@@ -57,10 +49,6 @@ function activateTab(name) {
   // so every switch starts the new sheet at its head. `instant` because the page
   // itself glides (html { scroll-behavior: smooth }) and a switch should not.
   window.scrollTo({ top: 0, behavior: 'instant' });
-
-  const layout = document.querySelector('.app-layout');
-  if (name === 'ch01' && !hasRevealedSidebar) layout.classList.add('is-landing');
-  else layout.classList.remove('is-landing');
 
   paintView();
   buildTrack();
@@ -198,16 +186,6 @@ track.addEventListener('click', (e) => {
 window.addEventListener('scroll', markDots, { passive: true });
 window.addEventListener('resize', markDots);
 
-/* The hero stays inside chapter 01: it reveals the course map and lets the
-   anchor glide down to the notes on the page's own smooth scroll. */
-const heroCta = document.querySelector('.btn-hero');
-if (heroCta) {
-  heroCta.addEventListener('click', () => {
-    hasRevealedSidebar = true;
-    document.querySelector('.app-layout').classList.remove('is-landing');
-  });
-}
-
 const firstTab = document.querySelector('.tab');
 if (firstTab) activateTab(firstTab.dataset.tab);
 
@@ -268,7 +246,7 @@ if (themeToggle) {
    touches the finish line. Initial geometry is CSS; this only writes inline
    values while a block moves. */
 function initTimeline() {
-  const widget = document.getElementById('timelineWidget');
+  const widget = document.querySelector('.cinematic-timeline');
   if (!widget) return;
 
   const finishLine = document.getElementById('finishLine');
@@ -301,29 +279,60 @@ function initTimeline() {
     });
   }
 
-  function setFinish(delay) {
+  function setFinish(delay, viaSheet) {
     const pos = finishAtRest + delay;
     // The percentage must resolve against the block area, not the whole
     // container: 100% here would include the label column a second time.
-    const raw = parseFloat(getComputedStyle(widget).getPropertyValue('--track-label'));
-    const label = Number.isFinite(raw) ? raw : 100;
-    finishLine.style.left = 'calc(' + label + 'px + (100% - ' + label + 'px) * ' + (pos / 100).toFixed(4) + ')';
+    const value = 'calc(var(--track-label) + (100% - var(--track-label)) * ' + (pos / 100).toFixed(4) + ')';
+    if (viaSheet) scrollSheet.replaceSync('#finishLine { left: ' + value + ' }');
+    else finishLine.style.left = value;
+    widget.classList.toggle('delayed', delay > 0);
+    finishLine.querySelector('.finish-label').textContent = delay > 0 ? 'DELAYED' : 'PROJECT FINISH';
 
     if (delay > 0) {
       const weeks = Math.round((delay / 10) * 10) / 10;
       statusText.textContent = 'Project Delayed by ' + weeks + (weeks === 1 ? ' Week!' : ' Weeks!');
       statusText.classList.add('delayed');
     } else {
-      statusText.textContent = 'On Schedule';
+      statusText.textContent = 'ON SCHEDULE';
       statusText.classList.remove('delayed');
     }
   }
 
   let drag = null;
+  let dragged = false;
+
+  /* Page scroll sweeps the finish line across the remaining float until the
+     visitor takes over by dragging a block. Its position goes through an
+     adopted sheet, so scrolling never adds a style attribute to the page. */
+  const scrollSheet = new CSSStyleSheet();
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, scrollSheet];
+
+  function scrollFraction() {
+    const room = document.documentElement.scrollHeight - window.innerHeight;
+    return room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)) : 0;
+  }
+
+  function onScroll() {
+    const pct = scrollFraction();
+    const broken = pct >= 0.99;
+    widget.classList.toggle('fourth-wall', broken);
+    /* The crack is a screen, not a scene: it lives on <body> so it stays put
+       when another chapter owns the viewport. */
+    document.body.classList.toggle('fourth-wall', broken);
+    if (dragged) return;
+    setFinish(pct * finishRoom, true);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
 
   function startDrag(e) {
+    if (!widget.classList.contains('is-settled')) return;
     const block = e.target.closest('.task-block');
     if (!block || !widget.contains(block)) return;
+    dragged = true;
     const point = e.type.indexOf('touch') === 0 ? e.touches[0] : e;
 
     drag = {
@@ -331,11 +340,10 @@ function initTimeline() {
       block,
       critical: block.closest('.track-blocks').dataset.track === 'critical',
       startX: point.clientX,
-      startLeft: parseFloat(getComputedStyle(block).left),
+      startLeft: (parseFloat(getComputedStyle(block).left) / block.parentElement.clientWidth) * 100,
       track: block.parentElement.clientWidth
     };
-    block.style.zIndex = '10';
-    block.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+    block.classList.add('is-dragging');
   }
 
   function doDrag(e) {
@@ -362,8 +370,7 @@ function initTimeline() {
 
   function endDrag() {
     if (!drag) return;
-    drag.block.style.zIndex = '';
-    drag.block.style.boxShadow = '';
+    drag.block.classList.remove('is-dragging');
     drag = null;
   }
 
@@ -380,20 +387,477 @@ initScrollReveal();
 buildTrack();
 initTimeline();
 
-/* ---- chapter 02: project selection weights ----
-   Widths are dynamic, so they cannot live in layout.css. They go through a
+/* ---- cinematic bands: domain expansion ----
+   Each band opens its sphere when a third of it is on screen, the title and
+   instruments follow on their own transition delays, and the sequence settles
+   after five seconds so the dimmed band accepts drags. Leaving re-arms it. */
+function initDomainBands() {
+  const bands = [...document.querySelectorAll('.cinematic-band')];
+  if (!bands.length) return;
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const SETTLE_MS = 4000;
+
+  bands.forEach((widget) => {
+    let settleTimer = null;
+
+    const settle = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = null;
+      widget.classList.add('is-settled');
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          widget.classList.add('is-active');
+          if (reduced.matches) settle();
+          else settleTimer = window.setTimeout(settle, SETTLE_MS);
+        } else {
+          window.clearTimeout(settleTimer);
+          settleTimer = null;
+          widget.classList.remove('is-active', 'is-settled');
+          // Collapse the reveal without a transition, so re-entry restarts at 0.
+          widget.classList.add('is-reset');
+          void widget.offsetWidth;
+          widget.classList.remove('is-reset');
+        }
+      });
+    }, {
+      threshold: 0.3
+    });
+
+    reduced.addEventListener('change', () => {
+      if (reduced.matches && widget.classList.contains('is-active')) settle();
+    });
+
+    observer.observe(widget);
+  });
+}
+
+initDomainBands();
+
+/* ---- cinematic bands: particle field ----
+   Fifty drifting motes over the sphere. Dark keeps the neon dust; light swaps
+   to gold four-point flares that twinkle on a sine. The loop only runs while
+   the band is on screen and uncovered, and a reduced-motion visitor gets one
+   still frame. */
+const flareSprites = new Map();
+
+function flareSprite(colour) {
+  if (flareSprites.has(colour)) return flareSprites.get(colour);
+
+  const SIZE = 64;
+  const sprite = document.createElement('canvas');
+  sprite.width = sprite.height = SIZE;
+  const g = sprite.getContext('2d');
+  const h = SIZE / 2;
+
+  // The halo is broad and soft; the spikes below carry the shape.
+  const glow = g.createRadialGradient(h, h, 0, h, h, h);
+  glow.addColorStop(0, 'rgba(255, 252, 240, 0.85)');
+  glow.addColorStop(0.18, 'rgba(' + colour + ', 0.55)');
+  glow.addColorStop(0.5, 'rgba(' + colour + ', 0.12)');
+  glow.addColorStop(1, 'rgba(' + colour + ', 0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, SIZE, SIZE);
+
+  // Concave sides are what read as a flare rather than a diamond.
+  const reach = h * 0.96;
+  const waist = h * 0.1;
+  g.beginPath();
+  g.moveTo(h, h - reach);
+  g.quadraticCurveTo(h + waist, h - waist, h + reach, h);
+  g.quadraticCurveTo(h + waist, h + waist, h, h + reach);
+  g.quadraticCurveTo(h - waist, h + waist, h - reach, h);
+  g.quadraticCurveTo(h - waist, h - waist, h, h - reach);
+  g.closePath();
+  g.fillStyle = 'rgba(' + colour + ', 0.92)';
+  g.fill();
+
+  g.beginPath();
+  g.arc(h, h, waist, 0, Math.PI * 2);
+  g.fillStyle = 'rgba(255, 252, 240, 0.95)';
+  g.fill();
+
+  flareSprites.set(colour, sprite);
+  return sprite;
+}
+
+function initField(canvas, widget, looks, occluder) {
+  if (!canvas || !widget || !canvas.getContext) return;
+
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const COUNT = 50; // per field; three fields stay far under the 500 budget
+  const particles = [];
+  let width = 0, height = 0, raf = null, stamp = 0.8;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = canvas.offsetWidth;
+    height = canvas.offsetHeight;
+    // A hidden sheet measures nothing; the field sizes itself on entry instead.
+    if (!width || !height) return false;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
+  }
+
+  for (let i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random(), y: Math.random(),
+      radius: Math.random() * 2 + 1,
+      speedX: (Math.random() - 0.5) * 0.5,
+      speedY: (Math.random() - 0.5) * 0.5,
+      opacity: Math.random() * 0.5 + 0.1,
+      // Per-star phase and rate keep the twinkle from pulsing in lockstep.
+      phase: Math.random() * Math.PI * 2,
+      rate: 0.8 + Math.random() * 1.6
+    });
+  }
+
+  function covered() {
+    return !!occluder && occluder.getBoundingClientRect().top <= 0;
+  }
+
+  function paint(time) {
+    if (!width || !height || covered()) return;
+    stamp = time;
+    const light = currentTheme() === 'light';
+    const look = light ? looks.light : looks.dark;
+    const sprite = light ? flareSprite(look.colour) : null;
+
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach((p) => {
+      const x = p.x * width, y = p.y * height;
+      if (sprite) {
+        // 0.3 → 1.0, the range the light field was specified at.
+        const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(time * p.rate + p.phase));
+        const size = 6 + p.radius * 5;
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size);
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + look.colour + ', ' + p.opacity + ')';
+        ctx.shadowColor = 'rgba(' + look.colour + ', 0.9)';
+        ctx.shadowBlur = 12;
+        ctx.fill();
+      }
+    });
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  }
+
+  function step(now) {
+    if (!width && !resize()) { raf = requestAnimationFrame(step); return; }
+    if (!covered()) {
+      particles.forEach((p) => {
+        p.x += p.speedX / width;
+        p.y += p.speedY / height;
+        if (p.x < 0) p.x = 1;
+        if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1;
+        if (p.y > 1) p.y = 0;
+      });
+      paint(now / 1000);
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function start() {
+    if (raf !== null) return;
+    resize();
+    if (reduced.matches) { paint(stamp); return; }
+    raf = requestAnimationFrame(step);
+  }
+
+  function stop() {
+    if (raf === null) return;
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+
+  resize();
+  paint(stamp);
+
+  new IntersectionObserver((entries) => {
+    entries.forEach((entry) => (entry.isIntersecting ? start() : stop()));
+  }, { threshold: 0.05 }).observe(widget);
+
+  window.addEventListener('resize', () => { resize(); if (raf === null) paint(stamp); });
+  reduced.addEventListener('change', () => { stop(); start(); });
+  // The toggle swaps the attribute inside a view transition; repaint at once so
+  // the captured frame already carries the new palette.
+  new MutationObserver(() => { if (raf === null) paint(stamp); })
+    .observe(document.documentElement, { attributeFilter: ['data-theme'] });
+}
+
+/* ---- chapter 03: the core ----
+   A wireframe icosahedron on a 2D canvas: it turns on its own, and the scroll
+   through the hold adds half a revolution and a push toward the camera. The
+   notes sheet rides over it, so the scene stops painting once covered. */
+function initCh03Scene() {
+  const widget = document.getElementById('ch03Scene');
+  const canvas = document.getElementById('ch03Core');
+  if (!widget || !canvas || !canvas.getContext) return;
+
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const hold = widget.closest('.band-hold') || widget;
+  const sheet = document.querySelector('.ch03-sheet');
+
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const scale = Math.sqrt(1 + PHI * PHI);
+  const verts = [
+    [-1, PHI, 0], [1, PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
+    [0, -1, PHI], [0, 1, PHI], [0, -1, -PHI], [0, 1, -PHI],
+    [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1]
+  ].map(([x, y, z]) => [x / scale, y / scale, z / scale]);
+
+  const edges = [];
+  let nearest = Infinity;
+  const gap = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  for (let i = 0; i < verts.length; i++) {
+    for (let j = i + 1; j < verts.length; j++) {
+      nearest = Math.min(nearest, gap(verts[i], verts[j]));
+    }
+  }
+  for (let i = 0; i < verts.length; i++) {
+    for (let j = i + 1; j < verts.length; j++) {
+      if (Math.abs(gap(verts[i], verts[j]) - nearest) < 1e-6) edges.push([i, j]);
+    }
+  }
+
+  let cw = 0, ch = 0, raf = null, onScreen = false;
+
+  function fit() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    if (!w || !h) return false;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (w !== cw || h !== ch) {
+      cw = w;
+      ch = h;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    return true;
+  }
+
+  function progress() {
+    const rect = hold.getBoundingClientRect();
+    const span = rect.height - window.innerHeight;
+    return span > 0 ? Math.min(1, Math.max(0, -rect.top / span)) : 0;
+  }
+
+  function covered() {
+    return !!sheet && sheet.getBoundingClientRect().top <= 0;
+  }
+
+  function draw(time) {
+    if (!fit() || covered()) return;
+
+    const t = reduced.matches ? 0 : time;
+    const p = reduced.matches ? 0.28 : progress();
+    const rx = 0.42 + t * 0.12 + p * Math.PI * 0.85;
+    const ry = -0.3 + t * 0.17 + p * Math.PI * 2;
+    const radius = Math.min(cw, ch) * 0.24 * (1 + p * 1.55);
+    const cx = cw / 2;
+    const cy = ch * 0.42;
+    const fov = 4.6;
+    const cosX = Math.cos(rx), sinX = Math.sin(rx);
+    const cosY = Math.cos(ry), sinY = Math.sin(ry);
+
+    const pts = verts.map(([x, y, z]) => {
+      const X = x * cosY - z * sinY;
+      const Z1 = x * sinY + z * cosY;
+      const Y = y * cosX - Z1 * sinX;
+      const Z = y * sinX + Z1 * cosX;
+      const k = fov / (fov - Z);
+      return { x: cx + X * radius * k, y: cy + Y * radius * k, z: Z, k };
+    });
+
+    const light = currentTheme() === 'light';
+    const ink = light ? '154, 92, 10' : '167, 139, 250';
+    const accent = light ? '217, 119, 6' : '34, 211, 238';
+
+    ctx.clearRect(0, 0, cw, ch);
+    edges.forEach(([i, j], index) => {
+      const a = pts[i], b = pts[j];
+      const depth = (a.z + b.z) / 2; // -1 back … 1 front
+      const alpha = 0.16 + 0.55 * ((depth + 1) / 2);
+      ctx.strokeStyle = 'rgba(' + (index % 5 === 0 ? accent : ink) + ', ' + alpha.toFixed(3) + ')';
+      ctx.lineWidth = depth > 0 ? 1.4 : 0.8;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    });
+
+    pts.forEach((pt) => {
+      const alpha = 0.22 + 0.55 * ((pt.z + 1) / 2);
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.5 * pt.k, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + accent + ', ' + alpha.toFixed(3) + ')';
+      ctx.fill();
+    });
+  }
+
+  function frame(now) {
+    draw(now / 1000);
+    raf = requestAnimationFrame(frame);
+  }
+
+  function still() {
+    draw(performance.now() / 1000);
+  }
+
+  function start() {
+    if (raf !== null || reduced.matches) return;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function stop() {
+    if (raf === null) return;
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+
+  new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      onScreen = entry.isIntersecting;
+      if (!onScreen) { stop(); return; }
+      if (reduced.matches) still();
+      else start();
+    });
+  }, { threshold: 0.05 }).observe(widget);
+
+  window.addEventListener('resize', () => { if (raf === null) still(); });
+  reduced.addEventListener('change', () => {
+    stop();
+    if (!onScreen) return;
+    if (reduced.matches) still();
+    else start();
+  });
+  new MutationObserver(() => { if (raf === null && onScreen) still(); })
+    .observe(document.documentElement, { attributeFilter: ['data-theme'] });
+
+  /* Hand the frame to the notes sheet before it starts clipping the title. */
+  function veil() {
+    if (!sheet) return;
+    const height = ch || canvas.offsetHeight;
+    widget.classList.toggle('is-veiled', height > 0 && sheet.getBoundingClientRect().top < height * 0.55);
+  }
+  window.addEventListener('scroll', veil, { passive: true });
+  window.addEventListener('resize', veil);
+
+  still();
+  veil();
+}
+
+/* ---- chapter 01: parallax tilt ----
+   The tracks ride a plane that leans toward the pointer and eases with scroll.
+   The transform lives in an adopted sheet, so no element gains a style attribute. */
+function init3DTilt() {
+  const wrapper = document.getElementById('tiltWrapper');
+  const section = document.getElementById('timelineWidget');
+  if (!wrapper || !section) return;
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const sheet = new CSSStyleSheet();
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  const clamp = (n) => Math.max(-1, Math.min(1, n));
+  const pointer = { x: 0, y: 0 };
+  let scrollLean = 0;
+  let queued = false;
+
+  function apply() {
+    queued = false;
+    const rx = Math.max(-6, Math.min(6, -(pointer.y * 5 + scrollLean * 2)));
+    const ry = Math.max(-6, Math.min(6, pointer.x * 5));
+    sheet.replaceSync('#tiltWrapper{transform:rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)}');
+  }
+
+  function queue() {
+    if (queued || reduced.matches) return;
+    queued = true;
+    requestAnimationFrame(apply);
+  }
+
+  function measureScroll() {
+    const r = section.getBoundingClientRect();
+    scrollLean = clamp(((r.top + r.height / 2) - window.innerHeight / 2) / window.innerHeight);
+  }
+
+  section.addEventListener('mousemove', (e) => {
+    if (reduced.matches) return;
+    const r = section.getBoundingClientRect();
+    pointer.x = clamp(((e.clientX - r.left) / r.width - 0.5) * 2);
+    pointer.y = clamp(((e.clientY - r.top) / r.height - 0.5) * 2);
+    queue();
+  });
+
+  section.addEventListener('mouseleave', () => {
+    pointer.x = 0;
+    pointer.y = 0;
+    queue();
+  });
+
+  window.addEventListener('scroll', () => {
+    if (reduced.matches) return;
+    measureScroll();
+    queue();
+  }, { passive: true });
+
+  window.addEventListener('resize', queue);
+  reduced.addEventListener('change', () => {
+    pointer.x = 0; pointer.y = 0; scrollLean = 0;
+    sheet.replaceSync('');
+  });
+
+  measureScroll();
+}
+
+initField(document.getElementById('particleCanvas'), document.getElementById('timelineWidget'), {
+  dark: { colour: '167, 139, 250' },
+  light: { colour: '217, 119, 6' }
+});
+initField(document.getElementById('scaleCanvas'), document.getElementById('scaleWidget'), {
+  dark: { colour: '52, 211, 153' },
+  light: { colour: '217, 119, 6' }
+});
+initField(document.getElementById('ch03Canvas'), document.getElementById('ch03Scene'), {
+  dark: { colour: '167, 139, 250' },
+  light: { colour: '217, 119, 6' }
+}, document.querySelector('.ch03-sheet'));
+initCh03Scene();
+init3DTilt();
+
+/* ---- chapter 02: the selection matrix ----
+   Bar heights are dynamic, so they cannot live in layout.css. They go through a
    constructable stylesheet instead of inline styles: the zero-inline-style
-   contract holds, and reusing the bar elements keeps the width transition
-   alive between slider moves. */
+   contract holds, and reusing the bar elements keeps the grow transition alive
+   between slider moves. */
 function initScale() {
   const widget = document.getElementById('scaleWidget');
   if (!widget) return;
 
-  const weightCost = document.getElementById('weight-cost');
-  const weightTime = document.getElementById('weight-time');
-  const weightRisk = document.getElementById('weight-risk');
-  const resultsContainer = document.getElementById('scaleResults');
-  if (!weightCost || !weightTime || !weightRisk || !resultsContainer) return;
+  const weights = {
+    cost: document.getElementById('weight-cost'),
+    time: document.getElementById('weight-time'),
+    risk: document.getElementById('weight-risk')
+  };
+  const displays = {
+    cost: document.getElementById('val-cost'),
+    time: document.getElementById('val-time'),
+    risk: document.getElementById('val-risk')
+  };
+  const bars = document.getElementById('equalizerBars');
+  if (!weights.cost || !weights.time || !weights.risk || !bars) return;
 
   // Fixed project scores (1-10)
   const projects = [
@@ -405,27 +869,39 @@ function initScale() {
   const sheet = new CSSStyleSheet();
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
-  const rows = projects.map((project) => {
-    const row = document.createElement('div');
-    row.className = 'project-bar-container';
-    row.dataset.project = project.name;
-    row.innerHTML =
-      '<div class="project-name"></div><div class="project-bar"></div><div class="winner-tag">WINNER</div>';
-    row.querySelector('.project-name').textContent = project.name;
-    resultsContainer.appendChild(row);
-    return row;
+  const columns = projects.map((project) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'eq-bar-wrapper';
+    wrapper.dataset.project = project.name;
+
+    const bar = document.createElement('div');
+    bar.className = 'eq-bar';
+
+    const points = document.createElement('span');
+    points.className = 'eq-points';
+
+    const label = document.createElement('div');
+    label.className = 'eq-label';
+    label.textContent = project.name;
+
+    bar.appendChild(points);
+    wrapper.append(bar, label);
+    bars.appendChild(wrapper);
+    return { wrapper, bar, points };
   });
 
   function calculate() {
-    const wCost = parseInt(weightCost.value, 10);
-    const wTime = parseInt(weightTime.value, 10);
-    const wRisk = parseInt(weightRisk.value, 10);
+    const w = {
+      cost: parseInt(weights.cost.value, 10),
+      time: parseInt(weights.time.value, 10),
+      risk: parseInt(weights.risk.value, 10)
+    };
 
-    // Max possible points to normalize the bars (10 * 10 * 3 = 300)
-    const maxPoints = (wCost + wTime + wRisk) * 10;
+    // Max possible points to normalise the bars (10 * 10 * 3 = 300)
+    const maxPoints = (w.cost + w.time + w.risk) * 10;
 
     const scores = projects.map((p) => {
-      const points = p.scores.cost * wCost + p.scores.time * wTime + p.scores.risk * wRisk;
+      const points = p.scores.cost * w.cost + p.scores.time * w.time + p.scores.risk * w.risk;
       return { name: p.name, points, percentage: (points / maxPoints) * 100 };
     });
 
@@ -433,24 +909,90 @@ function initScale() {
 
     sheet.replaceSync(
       scores
-        .map(
-          (s) =>
-            '.project-bar-container[data-project="' + s.name + '"] .project-bar{width:' + s.percentage.toFixed(2) + '%}'
-        )
+        .map((s) => '.eq-bar-wrapper[data-project="' + s.name + '"] .eq-bar{height:' + s.percentage.toFixed(2) + '%}')
         .join('\n')
     );
 
-    rows.forEach((row, i) => {
-      row.classList.toggle('winner', scores[i].name === winner.name);
-      row.querySelector('.project-bar').textContent = Math.round(scores[i].points) + ' pts';
+    columns.forEach((column, i) => {
+      const isWinner = scores[i].name === winner.name;
+      column.wrapper.classList.toggle('winner', isWinner);
+      column.bar.classList.toggle('winner', isWinner);
+      column.points.textContent = Math.round(scores[i].points) + ' pts';
+    });
+
+    Object.keys(displays).forEach((key) => {
+      if (displays[key]) displays[key].textContent = String(w[key]);
     });
   }
 
-  weightCost.addEventListener('input', calculate);
-  weightTime.addEventListener('input', calculate);
-  weightRisk.addEventListener('input', calculate);
+  Object.values(weights).forEach((input) => input.addEventListener('input', calculate));
 
   calculate();
 }
 
 initScale();
+
+/* ---- chapter 04: work breakdown structure ----
+   One delegated click handler toggles any node's target; the CSS owns the
+   horizontal collapse and the shatter stagger, this only flips state.
+   data-wbs-target, not data-target: the tab rail already owns that attribute. */
+function initWBS() {
+  const widget = document.getElementById('wbsWidget');
+  if (!widget) return;
+
+  widget.querySelectorAll('.wbs-node[data-wbs-target]').forEach((btn) => {
+    btn.setAttribute('aria-expanded', 'false');
+    if (document.getElementById(btn.dataset.wbsTarget)) btn.setAttribute('aria-controls', btn.dataset.wbsTarget);
+  });
+
+  widget.addEventListener('click', (e) => {
+    const btn = e.target.closest('.wbs-node');
+    if (!btn || !btn.dataset.wbsTarget) return;
+
+    const targetContainer = document.getElementById(btn.dataset.wbsTarget);
+    if (!targetContainer) return;
+
+    const isOpen = targetContainer.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Open the first level on load, after the page has settled, so it animates in.
+  const level1 = document.getElementById('level1');
+  if (level1) {
+    setTimeout(() => {
+      level1.classList.add('is-open');
+      const root = widget.querySelector('.wbs-node[data-wbs-target="level1"]');
+      if (root) root.setAttribute('aria-expanded', 'true');
+    }, 500);
+  }
+}
+
+initWBS();
+
+/* ---- course map: out of the way while an introduction is on screen ----
+   The rail is a chapter index, so it waits for the notes. The hero and every
+   cinematic band hold it back; on a plain sheet neither element is rendered,
+   so the observer reports them off-screen and the map appears. */
+function initSidebarRetract() {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+  const zones = [...document.querySelectorAll('.hero-section, .cinematic-band')];
+  if (!zones.length) return;
+
+  const onScreen = new Set();
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) onScreen.add(entry.target);
+      else onScreen.delete(entry.target);
+    });
+    sidebar.classList.toggle('is-retracted', onScreen.size > 0);
+  }, {
+    // The last 100px of the viewport does not count as "looking at" the intro.
+    rootMargin: '0px 0px -100px 0px',
+    threshold: 0.1
+  });
+
+  zones.forEach((zone) => observer.observe(zone));
+}
+
+initSidebarRetract();

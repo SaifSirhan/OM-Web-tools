@@ -10,7 +10,8 @@
       opt.textContent = 'Week ' + i;
       sel.appendChild(opt);
     }
-    sel.value = 3;
+    // Land on the beginning of the project, like the rest of the toolkit.
+    sel.value = 1;
 
     weekData = [
       { cbc: '10000', cac: '10500', pct: '80' },
@@ -18,7 +19,7 @@
       { cbc: '15000', cac: '14000', pct: '60' }
     ];
 
-    buildTable(3);
+    buildTable(1);
     calculate();
 
     sel.addEventListener('change', function () {

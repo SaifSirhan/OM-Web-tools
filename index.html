@@ -71,25 +71,25 @@
 
   <nav class="tabbar">
     <div class="shell">
-      <button type="button" class="tab active" data-tab="ch01" aria-controls="tab-ch01" aria-selected="true">01 · PROJECT FUNDAMENTALS</button>
-      <button type="button" class="tab" data-tab="ch02" aria-controls="tab-ch02" aria-selected="false">02 · IDENTIFICATION &amp; SELECTION</button>
-      <button type="button" class="tab" data-tab="ch03" aria-controls="tab-ch03" aria-selected="false">03 · PROPOSALS &amp; CONTRACTS</button>
-      <button type="button" class="tab hidden" data-tab="ch03-tool" aria-controls="tab-ch03-tool" aria-selected="false">03 · PROPOSAL SCORECARD</button>
-      <button type="button" class="tab" data-tab="ch04" aria-controls="tab-ch04" aria-selected="false">04 · SCOPE &amp; WBS</button>
-      <button type="button" class="tab" data-tab="ch05" aria-controls="tab-ch05" aria-selected="false">05 · SCHEDULING</button>
-      <button type="button" class="tab" data-tab="ch06" aria-controls="tab-ch06" aria-selected="false">06 · RESOURCES</button>
-      <button type="button" class="tab" data-tab="ch07" aria-controls="tab-ch07" aria-selected="false">07 · COST &amp; EVM</button>
-      <button type="button" class="tab" data-tab="ch08" aria-controls="tab-ch08" aria-selected="false">08 · RISK</button>
-      <button type="button" class="tab" data-tab="ch09" aria-controls="tab-ch09" aria-selected="false">09 · CLOSING</button>
-      <button type="button" class="tab" data-tab="ch10" aria-controls="tab-ch10" aria-selected="false">10 · PM ROLE</button>
-      <button type="button" class="tab" data-tab="ch11" aria-controls="tab-ch11" aria-selected="false">11 · TEAMS</button>
-      <button type="button" class="tab" data-tab="ch12" aria-controls="tab-ch12" aria-selected="false">12 · COMMS</button>
-      <button type="button" class="tab" data-tab="ch13" aria-controls="tab-ch13" aria-selected="false">13 · ORG STRUCTURE</button>
+      <button type="button" class="tab active" data-tab="ch01" data-tooltip="Project Fundamentals" aria-label="01 · Project Fundamentals" aria-controls="tab-ch01" aria-selected="true">01</button>
+      <button type="button" class="tab" data-tab="ch02" data-tooltip="Identification &amp; Selection" aria-label="02 · Identification and Selection" aria-controls="tab-ch02" aria-selected="false">02</button>
+      <button type="button" class="tab" data-tab="ch03" data-tooltip="Proposals &amp; Contracts" aria-label="03 · Proposals and Contracts" aria-controls="tab-ch03" aria-selected="false">03</button>
+      <button type="button" class="tab hidden" data-tab="ch03-tool" data-tooltip="Proposal Scorecard" aria-label="03b · Proposal Scorecard" aria-controls="tab-ch03-tool" aria-selected="false">03b</button>
+      <button type="button" class="tab" data-tab="ch04" data-tooltip="Scope &amp; WBS" aria-label="04 · Scope and WBS" aria-controls="tab-ch04" aria-selected="false">04</button>
+      <button type="button" class="tab" data-tab="ch05" data-tooltip="Scheduling" aria-label="05 · Scheduling" aria-controls="tab-ch05" aria-selected="false">05</button>
+      <button type="button" class="tab" data-tab="ch06" data-tooltip="Resources" aria-label="06 · Resources" aria-controls="tab-ch06" aria-selected="false">06</button>
+      <button type="button" class="tab" data-tab="ch07" data-tooltip="Cost &amp; EVM" aria-label="07 · Cost and EVM" aria-controls="tab-ch07" aria-selected="false">07</button>
+      <button type="button" class="tab" data-tab="ch08" data-tooltip="Risk" aria-label="08 · Risk" aria-controls="tab-ch08" aria-selected="false">08</button>
+      <button type="button" class="tab" data-tab="ch09" data-tooltip="Closing" aria-label="09 · Closing" aria-controls="tab-ch09" aria-selected="false">09</button>
+      <button type="button" class="tab" data-tab="ch10" data-tooltip="PM Role" aria-label="10 · PM Role" aria-controls="tab-ch10" aria-selected="false">10</button>
+      <button type="button" class="tab" data-tab="ch11" data-tooltip="Teams" aria-label="11 · Teams" aria-controls="tab-ch11" aria-selected="false">11</button>
+      <button type="button" class="tab" data-tab="ch12" data-tooltip="Comms" aria-label="12 · Comms" aria-controls="tab-ch12" aria-selected="false">12</button>
+      <button type="button" class="tab" data-tab="ch13" data-tooltip="Org Structure" aria-label="13 · Org Structure" aria-controls="tab-ch13" aria-selected="false">13</button>
     </div>
   </nav>
 
   <div class="app-layout">
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar is-retracted" id="sidebar">
       <h2 class="sidebar-title" id="sidebarTitle">COURSE MODULES</h2>
       <nav class="sidebar-nav" id="sidebarNav" aria-labelledby="sidebarTitle">
         <a href="#tab-ch01" class="sidebar-link" data-target="ch01">01 · PROJECT FUNDAMENTALS</a>
@@ -115,47 +115,59 @@
 
     <main class="main-content tab-panels">
     <section id="tab-ch01" class="panel">
-      <article class="notes">
         <div class="hero-section">
           <h2 class="hero-title">Master Project Management</h2>
           <p class="hero-subtitle">Interactive tools and study materials for the modern project manager.</p>
-          <a href="#notes-start" class="btn-primary btn-hero">Start Learning ↓</a>
+          <a href="#timelineWidget" class="btn-primary btn-hero">Start Learning ↓</a>
 
-          <div class="interactive-timeline" id="timelineWidget">
-            <div class="timeline-header">
-              <span class="timeline-title">Interactive: Critical Path vs Slack</span>
-              <span class="timeline-subtitle">Drag the blocks to see how delays affect the project.</span>
-            </div>
-
-            <div class="timeline-track-container">
-              <!-- Track 1: Critical Path -->
-              <div class="timeline-track">
-                <div class="track-label">Critical Path</div>
-                <div class="track-blocks" data-track="critical">
-                  <div class="task-block" data-id="design" data-duration="20">Design</div>
-                  <div class="task-block" data-id="build" data-duration="40">Build</div>
-                  <div class="task-block" data-id="test" data-duration="20">Test</div>
-                </div>
-              </div>
-
-              <!-- Track 2: Slack -->
-              <div class="timeline-track">
-                <div class="track-label">Slack (Float)</div>
-                <div class="track-blocks" data-track="slack">
-                  <div class="task-block" data-id="docs" data-duration="30">Docs</div>
-                </div>
-              </div>
-
-              <!-- The moving Finish Line -->
-              <div class="finish-line" id="finishLine">
-                <span class="finish-label">Project Finish</span>
-              </div>
-            </div>
-
-            <div class="timeline-status" id="timelineStatus">On Schedule</div>
-          </div>
         </div>
 
+          <div class="band-hold">
+          <div class="cinematic-band cinematic-timeline" id="timelineWidget">
+            <!-- This is the expanding energy sphere -->
+            <div class="domain-bg" aria-hidden="true"></div>
+            <canvas id="particleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+            <div class="cinematic-content">
+              <div class="timeline-header">
+                <h2 class="cinematic-title">THE CRITICAL PATH</h2>
+                <p class="cinematic-subtitle">Drag the blocks to see how delays ripple through time.</p>
+              </div>
+
+              <div class="tilt-wrapper" id="tiltWrapper">
+                <div class="timeline-track-container">
+                  <!-- Track 1: Critical Path -->
+                  <div class="timeline-track">
+                    <div class="track-label">CRITICAL</div>
+                    <div class="track-blocks" data-track="critical">
+                      <div class="task-block" data-id="design" data-duration="20">Design</div>
+                      <div class="task-block" data-id="build" data-duration="40">Build</div>
+                      <div class="task-block" data-id="test" data-duration="20">Test</div>
+                    </div>
+                  </div>
+
+                  <!-- Track 2: Slack -->
+                  <div class="timeline-track">
+                    <div class="track-label">FLOAT</div>
+                    <div class="track-blocks" data-track="slack">
+                      <div class="task-block" data-id="docs" data-duration="30">Docs</div>
+                    </div>
+                  </div>
+
+                  <!-- The moving Finish Line -->
+                  <div class="finish-line" id="finishLine">
+                    <div class="finish-laser" aria-hidden="true"></div>
+                    <span class="finish-label">PROJECT FINISH</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-status" id="timelineStatus" role="status">ON SCHEDULE</div>
+            </div>
+          </div>
+          </div>
+
+      <article class="notes">
         <div class="notes-content" id="notes-start">
         <section class="note-block">
           <h2>01 — WHAT IS A PROJECT</h2>
@@ -320,32 +332,6 @@
     <section id="tab-ch02" class="panel" hidden>
       <article class="notes">
         <div class="notes-content">
-          <div class="interactive-scale" id="scaleWidget">
-            <div class="scale-header">
-              <span class="timeline-title">Interactive: Project Selection</span>
-              <span class="timeline-subtitle">Adjust the priority weights to see which project wins.</span>
-            </div>
-
-            <div class="scale-criteria">
-              <div class="criteria-row">
-                <label for="weight-cost">Cost (1-10)</label>
-                <input type="range" id="weight-cost" min="1" max="10" value="5">
-              </div>
-              <div class="criteria-row">
-                <label for="weight-time">Time (1-10)</label>
-                <input type="range" id="weight-time" min="1" max="10" value="5">
-              </div>
-              <div class="criteria-row">
-                <label for="weight-risk">Risk (1-10)</label>
-                <input type="range" id="weight-risk" min="1" max="10" value="5">
-              </div>
-            </div>
-
-            <div class="scale-results" id="scaleResults">
-              <!-- JS will populate Project A, B, C bars here -->
-            </div>
-          </div>
-
           <section class="note-block">
             <h2>01 — PROJECT IDENTIFICATION &amp; SELECTION</h2>
             <p class="definition">Projects start with recognizing a need, problem, or opportunity. Because organizations usually have more needs than resources, they must use a decision-making process to prioritize and select the project with the greatest overall benefit.</p>
@@ -416,6 +402,47 @@
           </section>
         </div>
       </article>
+
+      <div class="band-hold">
+      <div class="cinematic-band cinematic-scale" id="scaleWidget">
+        <div class="domain-bg" aria-hidden="true"></div>
+        <canvas id="scaleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+        <div class="cinematic-content">
+          <div class="timeline-header">
+            <h2 class="cinematic-title">THE SELECTION MATRIX</h2>
+            <p class="cinematic-subtitle">Adjust the weights. The strongest project will rise.</p>
+          </div>
+
+          <div class="scale-layout">
+            <!-- Controls -->
+            <div class="scale-controls">
+              <div class="criteria-row">
+                <label for="weight-cost">Cost Priority</label>
+                <input type="range" id="weight-cost" min="1" max="10" value="5">
+                <div class="val-display" id="val-cost">5</div>
+              </div>
+              <div class="criteria-row">
+                <label for="weight-time">Time Priority</label>
+                <input type="range" id="weight-time" min="1" max="10" value="5">
+                <div class="val-display" id="val-time">5</div>
+              </div>
+              <div class="criteria-row">
+                <label for="weight-risk">Risk Priority</label>
+                <input type="range" id="weight-risk" min="1" max="10" value="5">
+                <div class="val-display" id="val-risk">5</div>
+              </div>
+            </div>
+
+            <!-- The Equalizer Bars -->
+            <div class="equalizer-container" id="equalizerBars">
+              <!-- JS will populate Project A, B, C glowing bars here -->
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
       <div class="nav-controls">
         <button type="button" class="btn-nav btn-prev" data-direction="prev">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -429,8 +456,25 @@
     </section>
 
     <section id="tab-ch03" class="panel" hidden>
-      <article class="notes">
-        <div class="notes-content">
+      <div class="band-hold ch03-hold">
+        <div class="cinematic-band ch03-band" id="ch03Scene">
+          <div class="domain-bg" aria-hidden="true"></div>
+          <canvas id="ch03Core" class="ch03-core" aria-hidden="true"></canvas>
+          <canvas id="ch03Canvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+          <div class="cinematic-content ch03-content">
+            <p class="ch03-eyebrow">Chapter 03 · Proposals &amp; Contracts</p>
+            <h2 class="cinematic-title">THE CORE</h2>
+            <p class="cinematic-subtitle">Relationships win the work. Proposals prove the plan. Contracts make it binding.</p>
+            <p class="ch03-cue" aria-hidden="true">Scroll to align ↓</p>
+          </div>
+        </div>
+
+        <!-- The notes ride over the pinned scene. The sheet begins where the
+             band stops holding, so the chapter scrolls up across the canvas. -->
+        <div class="ch03-sheet">
+          <article class="notes">
+            <div class="notes-content">
           <section class="note-block">
             <h2>01 — BUILDING RELATIONSHIPS</h2>
             <p class="definition">Building relationships with customers and partners is the foundation for successful funding and opportunities. Trust is key, and ethics are imperative.</p>
@@ -488,19 +532,22 @@
           </section>
         </div>
       </article>
-      <div class="tool-cta-wrapper">
-        <button type="button" class="btn-primary" data-target="ch03-tool">Launch Proposal Scorecard →</button>
-      </div>
 
-      <div class="nav-controls">
-        <button type="button" class="btn-nav btn-prev" data-direction="prev">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-          Previous
-        </button>
-        <button type="button" class="btn-nav btn-next" data-direction="next">
-          Next
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
+          <div class="tool-cta-wrapper">
+            <button type="button" class="btn-primary" data-target="ch03-tool">Launch Proposal Scorecard →</button>
+          </div>
+
+          <div class="nav-controls">
+            <button type="button" class="btn-nav btn-prev" data-direction="prev">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+              Previous
+            </button>
+            <button type="button" class="btn-nav btn-next" data-direction="next">
+              Next
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -559,6 +606,60 @@
     <section id="tab-ch04" class="panel" hidden>
       <article class="notes">
         <div class="notes-content">
+          <div class="interactive-wbs" id="wbsWidget">
+            <div class="scale-header">
+              <span class="timeline-title">Interactive: Work Breakdown Structure</span>
+              <span class="timeline-subtitle">Click a node to break it down further.</span>
+            </div>
+
+            <div class="wbs-tree">
+              <!-- Root Node -->
+              <div class="wbs-branch">
+                <button class="wbs-node root-node" data-wbs-target="level1">
+                  <span class="node-title">1.0 Project</span>
+                </button>
+
+                <!-- Level 1 Container -->
+                <div class="wbs-children level-1" id="level1">
+
+                  <!-- L1: Design -->
+                  <div class="wbs-branch">
+                    <button class="wbs-node l1-node" data-wbs-target="design-children">
+                      <span class="node-title">1.1 Design</span>
+                    </button>
+                    <div class="wbs-children level-2" id="design-children">
+                      <button class="wbs-node leaf-node">1.1.1 Wireframes</button>
+                      <button class="wbs-node leaf-node">1.1.2 UI Kit</button>
+                    </div>
+                  </div>
+
+                  <!-- L1: Build -->
+                  <div class="wbs-branch">
+                    <button class="wbs-node l1-node" data-wbs-target="build-children">
+                      <span class="node-title">1.2 Build</span>
+                    </button>
+                    <div class="wbs-children level-2" id="build-children">
+                      <button class="wbs-node leaf-node">1.2.1 Frontend</button>
+                      <button class="wbs-node leaf-node">1.2.2 Backend</button>
+                    </div>
+                  </div>
+
+                  <!-- L1: Test -->
+                  <div class="wbs-branch">
+                    <button class="wbs-node l1-node" data-wbs-target="test-children">
+                      <span class="node-title">1.3 Test</span>
+                    </button>
+                    <div class="wbs-children level-2" id="test-children">
+                      <button class="wbs-node leaf-node">1.3.1 QA</button>
+                      <button class="wbs-node leaf-node">1.3.2 UAT</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
           <section class="note-block">
             <h2>01 — PROJECT OBJECTIVE</h2>
             <p class="definition">The planning process is based on the project objective. It establishes what is to be accomplished and is often stated in the project charter or RFP.</p>
@@ -1004,6 +1105,7 @@
 
   <div class="scroll-track" id="scrollTrack" aria-hidden="true"></div>
   <div class="viewport-fog" aria-hidden="true"></div>
+  <div class="cracked-edge" aria-hidden="true"></div>
 
   <script src="js/app.js"></script>
   <script src="js/ch07-evm.js"></script>
